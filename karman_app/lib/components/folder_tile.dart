@@ -1,28 +1,27 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 class FolderTile extends StatelessWidget {
   final String folderName;
-  final Function(bool?)? onChanged;
   final Function(BuildContext)? onEdit;
   final Function(BuildContext)? onDelete;
-  final Function()? onTap;  // Add this line
+  final Function()? onTap;
 
-  const FolderTile({
+  FolderTile({
     super.key,
     required this.folderName,
-    required this.onChanged,
     required this.onEdit,
     required this.onDelete,
-    required this.onTap,  // Add this line
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,  
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Material(
+        color: Colors.transparent,
         child: Slidable(
           key: ValueKey(folderName),
           endActionPane: ActionPane(
@@ -30,37 +29,43 @@ class FolderTile extends StatelessWidget {
             children: [
               SlidableAction(
                 onPressed: onEdit,
-                backgroundColor: Colors.grey[900]!,
+                backgroundColor: Colors.transparent,
                 foregroundColor: Colors.blueAccent,
-                icon: Icons.mode_edit_outline_rounded,
+                icon: CupertinoIcons.pen,
                 label: 'Edit',
               ),
               SlidableAction(
                 onPressed: onDelete,
-                backgroundColor: Colors.grey[900]!,
+                backgroundColor: Colors.transparent,
                 foregroundColor: Colors.redAccent,
-                icon: Icons.delete_outline_rounded,
+                icon: CupertinoIcons.delete,
                 label: 'Delete',
               ),
             ],
           ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey[900]!,
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey[700]!,
-                  width: 1,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+              decoration: BoxDecoration(
+                color: CupertinoColors.darkBackgroundGray,
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey[700]!,
+                    width: 1,
+                  ),
                 ),
               ),
-            ),
-            child: Text(
-              folderName,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  folderName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
