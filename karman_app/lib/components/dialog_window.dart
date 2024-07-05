@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class TaskDialog extends StatelessWidget {
+class KarmanDialogWindow extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSave;
   final VoidCallback onCancel;
   final String? initialText;
 
-  TaskDialog({
+  KarmanDialogWindow({super.key, 
     required this.controller,
     required this.onSave,
     required this.onCancel,

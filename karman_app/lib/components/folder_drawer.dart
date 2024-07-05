@@ -65,7 +65,7 @@ class _FolderDrawerState extends State<FolderDrawer> {
                           showCupertinoDialog(
                             context: context,
                             builder: (context) {
-                              return TaskDialog(
+                              return KarmanDialogWindow(
                                 controller: widget.controller,
                                 onSave: () {
                                   setState(() {
