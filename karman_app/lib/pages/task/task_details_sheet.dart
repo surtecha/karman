@@ -2,25 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:karman_app/components/date_time/date_button.dart';
 import 'package:karman_app/components/date_time/reminders.dart';
+import 'package:karman_app/components/task/task_note.dart';
+import 'package:karman_app/controllers/task/task_controller.dart';
+import 'package:karman_app/models/task/task.dart';
+import 'package:karman_app/services/notification_service.dart';
+import 'package:provider/provider.dart';
 
 class TaskDetailsSheet extends StatefulWidget {
-  final String taskName;
-  final String initialNote;
-  final DateTime? initialDueDate;
-  final String initialPriority;
-  final DateTime? initialReminderDate;
-  final TimeOfDay? initialReminderTime;
-  final Function(String, DateTime?, String, DateTime?, TimeOfDay?) onSave;
+  final Task task;
 
   const TaskDetailsSheet({
     super.key,
-    required this.taskName,
-    required this.initialNote,
-    required this.initialDueDate,
-    required this.initialPriority,
-    this.initialReminderDate,
-    this.initialReminderTime,
-    required this.onSave,
+    required this.task,
   });
 
   @override
@@ -30,18 +23,20 @@ class TaskDetailsSheet extends StatefulWidget {
 class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
   late TextEditingController _noteController;
   late DateTime? _dueDate;
-  late String _priority;
-  late DateTime? _reminderDate;
-  late TimeOfDay? _reminderTime;
+  late int _priority;
+  late DateTime? _reminder;
+  bool _isDateEnabled = false;
+  bool _isReminderEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    _noteController = TextEditingController(text: widget.initialNote);
-    _dueDate = widget.initialDueDate;
-    _priority = widget.initialPriority;
-    _reminderDate = widget.initialReminderDate;
-    _reminderTime = widget.initialReminderTime;
+    _noteController = TextEditingController(text: widget.task.note);
+    _dueDate = widget.task.dueDate;
+    _priority = widget.task.priority;
+    _reminder = widget.task.reminder;
+    _isDateEnabled = widget.task.dueDate != null;
+    _isReminderEnabled = widget.task.reminder != null;
   }
 
   @override
@@ -51,8 +46,30 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
   }
 
   void _saveChanges() {
-    widget.onSave(_noteController.text, _dueDate, _priority, _reminderDate,
-        _reminderTime);
+    final updatedTask = Task(
+      taskId: widget.task.taskId,
+      name: widget.task.name,
+      note: _noteController.text,
+      priority: _priority,
+      dueDate: _isDateEnabled ? _dueDate : null,
+      reminder: _isReminderEnabled ? _reminder : null,
+      folderId: widget.task.folderId,
+    );
+
+    context.read<TaskController>().updateTask(updatedTask);
+
+    if (updatedTask.reminder != null) {
+      NotificationService.scheduleNotification(
+        id: updatedTask.taskId!,
+        title: 'Task Reminder',
+        body: updatedTask.name,
+        scheduledDate: updatedTask.reminder!,
+        payload: 'task_${updatedTask.taskId}',
+      );
+    } else {
+      NotificationService.cancelNotification(updatedTask.taskId!);
+    }
+
     Navigator.of(context).pop();
   }
 
@@ -79,7 +96,7 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
                   children: [
                     Center(
                       child: Text(
-                        widget.taskName,
+                        widget.task.name,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 30,
@@ -110,64 +127,60 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Note:',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        SizedBox(height: 10),
-                        CupertinoTextField(
+                        TaskNote(
                           controller: _noteController,
-                          placeholder: 'Add a note...',
-                          style: TextStyle(color: Colors.white),
-                          decoration: BoxDecoration(
-                            color: CupertinoColors
-                                .tertiarySystemBackground.darkColor,
-                            borderRadius: BorderRadius.circular(8),
+                          hintText: 'Note...',
+                        ),
+                        SizedBox(height: 30),
+                        _buildToggleRow(
+                          icon: CupertinoIcons.calendar,
+                          title: 'Date',
+                          isEnabled: _isDateEnabled,
+                          onToggle: (value) {
+                            setState(() {
+                              _isDateEnabled = value;
+                              if (!value) _dueDate = null;
+                            });
+                          },
+                          child: DateButton(
+                            selectedDate: _dueDate,
+                            onDateSelected: (date) {
+                              setState(() {
+                                _dueDate = date;
+                              });
+                            },
+                            isEnabled: _isDateEnabled,
                           ),
                         ),
                         SizedBox(height: 20),
-                        Text(
-                          'Due Date:',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        SizedBox(height: 10),
-                        DateButton(
-                          selectedDate: _dueDate,
-                          onDateSelected: (date) {
+                        _buildToggleRow(
+                          icon: CupertinoIcons.bell,
+                          title: 'Reminder',
+                          isEnabled: _isReminderEnabled,
+                          onToggle: (value) {
                             setState(() {
-                              _dueDate = date;
+                              _isReminderEnabled = value;
+                              if (!value) _reminder = null;
                             });
                           },
+                          child: ReminderButton(
+                            selectedDateTime: _reminder,
+                            onReminderSet: (DateTime newDateTime) {
+                              setState(() {
+                                _reminder = newDateTime;
+                              });
+                            },
+                            isEnabled: _isReminderEnabled,
+                          ),
                         ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Priority:',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        SizedBox(height: 10),
+                        SizedBox(height: 30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            _buildPriorityOption('Low', Colors.green),
-                            _buildPriorityOption('Medium', Colors.yellow),
-                            _buildPriorityOption('High', Colors.red),
+                            _buildPriorityOption(1, Colors.green),
+                            _buildPriorityOption(2, Colors.yellow),
+                            _buildPriorityOption(3, Colors.red),
                           ],
-                        ),
-                        SizedBox(height: 20),
-                        Text(
-                          'Reminder:',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        SizedBox(height: 10),
-                        ReminderButton(
-                          selectedDate: _reminderDate,
-                          selectedTime: _reminderTime,
-                          onReminderSet: (date, time) {
-                            setState(() {
-                              _reminderDate = date;
-                              _reminderTime = time;
-                            });
-                          },
                         ),
                       ],
                     ),
@@ -181,7 +194,28 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
     );
   }
 
-  Widget _buildPriorityOption(String priority, Color color) {
+  Widget _buildToggleRow({
+    required IconData icon,
+    required String title,
+    required bool isEnabled,
+    required Function(bool) onToggle,
+    required Widget child,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white),
+        SizedBox(width: 10),
+        Expanded(child: child),
+        CupertinoSwitch(
+          value: isEnabled,
+          onChanged: onToggle,
+          activeColor: Colors.white,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriorityOption(int priority, Color color) {
     bool isSelected = _priority == priority;
     return GestureDetector(
       onTap: () {
@@ -212,7 +246,7 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
           ),
           SizedBox(height: 5),
           Text(
-            priority,
+            priority == 1 ? 'Low' : (priority == 2 ? 'Medium' : 'High'),
             style: TextStyle(
               color: Colors.white,
               fontSize: 12,

@@ -1,20 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:karman_app/components/icon_selection_dialog.dart.dart';
+import 'package:karman_app/models/task/task_folder.dart';
 
 class FolderTile extends StatelessWidget {
-  final String folderName;
-  final Function(BuildContext)? onEdit;
-  final Function(BuildContext)? onDelete;
-  final Function()? onTap;
+  final TaskFolder folder;
+  final Function() onTap;
+  final Function(BuildContext) onEdit;
+  final Function(BuildContext) onDelete;
+  final Function(IconData) onIconChanged;
 
-  FolderTile({
-    super.key,
-    required this.folderName,
+  const FolderTile({
+    Key? key,
+    required this.folder,
+    required this.onTap,
     required this.onEdit,
     required this.onDelete,
-    required this.onTap,
-  });
+    required this.onIconChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +27,7 @@ class FolderTile extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Slidable(
-          key: ValueKey(folderName),
+          key: ValueKey(folder.folder_id),
           endActionPane: ActionPane(
             motion: DrawerMotion(),
             children: [
@@ -56,16 +60,34 @@ class FolderTile extends StatelessWidget {
                   ),
                 ),
               ),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  folderName,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (context) => IconSelectionDialog(
+                          onIconSelected: onIconChanged,
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      folder.icon,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
-                ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      folder.name,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

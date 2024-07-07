@@ -1,31 +1,37 @@
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 
 class DateButton extends StatelessWidget {
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
+  final bool isEnabled;
 
   const DateButton({
     super.key,
     required this.selectedDate,
     required this.onDateSelected,
+    this.isEnabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      color: CupertinoColors.tertiarySystemBackground.darkColor,
+    return GestureDetector(
+      onTap: isEnabled ? () => _showDatePicker(context) : null,
       child: Text(
         selectedDate == null
             ? 'Select Date'
-            : '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}',
-        style: TextStyle(color: CupertinoColors.white),
+            : DateFormat('MMM d, yyyy').format(selectedDate!),
+        style: TextStyle(
+          color: isEnabled ? CupertinoColors.white : CupertinoColors.systemGrey,
+          fontSize: 18,
+        ),
       ),
-      onPressed: () => _showDatePicker(context),
     );
   }
 
   void _showDatePicker(BuildContext context) {
+    DateTime tempPickedDate = selectedDate ?? DateTime.now();
+
     showCupertinoModalPopup(
       context: context,
       builder: (_) => Container(
@@ -36,14 +42,19 @@ class DateButton extends StatelessWidget {
             Container(
               height: 240,
               child: CupertinoDatePicker(
-                initialDateTime: selectedDate ?? DateTime.now(),
+                initialDateTime: tempPickedDate,
                 mode: CupertinoDatePickerMode.date,
-                onDateTimeChanged: onDateSelected,
+                onDateTimeChanged: (DateTime newDateTime) {
+                  tempPickedDate = newDateTime;
+                },
               ),
             ),
             CupertinoButton(
               child: Text('OK'),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                onDateSelected(tempPickedDate);
+                Navigator.of(context).pop();
+              },
             )
           ],
         ),

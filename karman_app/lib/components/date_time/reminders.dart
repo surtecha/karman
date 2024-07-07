@@ -1,40 +1,44 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ReminderButton extends StatelessWidget {
-  final DateTime? selectedDate;
-  final TimeOfDay? selectedTime;
-  final Function(DateTime?, TimeOfDay?) onReminderSet;
+  final DateTime? selectedDateTime;
+  final Function(DateTime) onReminderSet;
+  final bool isEnabled;
 
   const ReminderButton({
-    super.key,
-    this.selectedDate,
-    this.selectedTime,
+    Key? key,
+    this.selectedDateTime,
     required this.onReminderSet,
-  });
+    this.isEnabled = true,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      color: CupertinoColors.tertiarySystemBackground.darkColor,
-      onPressed: () => _showReminderPicker(context),
+    return GestureDetector(
+      onTap: isEnabled ? () => _showReminderPicker(context) : null,
       child: Text(
         _getReminderText(),
-        style: TextStyle(color: CupertinoColors.white),
+        style: TextStyle(
+          color: isEnabled ? CupertinoColors.white : CupertinoColors.systemGrey,
+          fontSize: 18,
+        ),
       ),
     );
   }
 
   String _getReminderText() {
-    if (selectedDate != null && selectedTime != null) {
-      return '${_formatDate(selectedDate!)} at ${_formatTime(selectedTime!)}';
+    if (selectedDateTime != null) {
+      return '${_formatDate(selectedDateTime!)} at ${_formatTime(TimeOfDay.fromDateTime(selectedDateTime!))}';
     } else {
       return 'Set Reminder';
     }
   }
 
   void _showReminderPicker(BuildContext context) {
+    DateTime tempDateTime = selectedDateTime ?? DateTime.now();
+
     showCupertinoModalPopup(
       context: context,
       builder: (BuildContext context) {
@@ -53,7 +57,7 @@ class ReminderButton extends StatelessWidget {
                   CupertinoButton(
                     child: Text('Done'),
                     onPressed: () {
-                      onReminderSet(selectedDate, selectedTime);
+                      onReminderSet(tempDateTime);
                       Navigator.of(context).pop();
                     },
                   ),
@@ -62,12 +66,9 @@ class ReminderButton extends StatelessWidget {
               Expanded(
                 child: CupertinoDatePicker(
                   mode: CupertinoDatePickerMode.dateAndTime,
-                  initialDateTime: selectedDate ?? DateTime.now(),
+                  initialDateTime: tempDateTime,
                   onDateTimeChanged: (DateTime newDateTime) {
-                    onReminderSet(
-                      newDateTime,
-                      TimeOfDay.fromDateTime(newDateTime),
-                    );
+                    tempDateTime = newDateTime;
                   },
                 ),
               ),
@@ -79,11 +80,11 @@ class ReminderButton extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
+    return DateFormat('MMM d, yyyy').format(date);
   }
 
   String _formatTime(TimeOfDay time) {
-    final hours = time.hourOfPeriod;
+    final hours = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
     final minutes = time.minute.toString().padLeft(2, '0');
     final period = time.period == DayPeriod.am ? 'AM' : 'PM';
     return '$hours:$minutes $period';

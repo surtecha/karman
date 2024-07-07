@@ -1,24 +1,35 @@
 import 'package:flutter/cupertino.dart';
 import 'package:karman_app/app_shell.dart';
-import 'package:karman_app/database/habit_database.dart';
+import 'package:karman_app/controllers/habit/habit_controller.dart';
+import 'package:karman_app/controllers/task/task_controller.dart';
 import 'package:karman_app/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:path_provider/path_provider.dart';
+import 'package:karman_app/database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.init();
   tz.initializeTimeZones();
 
-  // initialize database
-  await HabitDatabase.initialize();
-  await HabitDatabase().saveFirstLaunchDate();
+  final dir = await getApplicationDocumentsDirectory();
+  final databaseService = DatabaseService();
+  await databaseService.database; // This initializes the database
+
+  // Initialize controllers
+  final taskController = TaskController();
+  final habitController = HabitController();
+
+  // Load initial data
+  await taskController.loadTasks();
+  await taskController.loadFolders();
+  await habitController.loadHabits();
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(
-        create: (context) => HabitDatabase(),
-      ),
+      ChangeNotifierProvider(create: (context) => taskController),
+      ChangeNotifierProvider(create: (context) => habitController),
     ],
     child: KarmanApp(),
   ));

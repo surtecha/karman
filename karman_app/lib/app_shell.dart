@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:karman_app/pages/habit/habits_page.dart';
 import 'package:karman_app/pages/pomodoro/pomodoro_page.dart';
 import 'package:karman_app/pages/setting/settings_page.dart';
-import 'package:karman_app/pages/tasks/tasks_page.dart';
+import 'package:karman_app/pages/task/tasks_page.dart';
 import 'package:karman_app/pages/zen/zen_page.dart';
 
 class AppShell extends StatelessWidget {
