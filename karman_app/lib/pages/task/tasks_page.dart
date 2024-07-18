@@ -1,343 +1,330 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:karman_app/components/dialog_window.dart';
-import 'package:karman_app/components/task/completed_task_header.dart';
 import 'package:karman_app/controllers/task/task_controller.dart';
 import 'package:karman_app/models/task/task.dart';
-import 'package:karman_app/models/task/task_folder.dart';
 import 'package:karman_app/pages/task/task_details_sheet.dart';
 import 'package:karman_app/components/task/task_tile.dart';
-import 'package:karman_app/components/task/folder_drawer.dart';
 import 'package:provider/provider.dart';
 
 class TasksPage extends StatefulWidget {
-  const TasksPage({Key? key}) : super(key: key);
+  const TasksPage({super.key});
 
   @override
   _TasksPageState createState() => _TasksPageState();
 }
 
 class _TasksPageState extends State<TasksPage> {
-  int currentFolderId = 1; // Assuming 1 is the default folder ID
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   List<Task> _sortedTasks = [];
+  final Map<int, bool> _expandedSections = {1: true, 2: true, 3: true, 0: true};
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TaskController>().loadTasks();
-      context.read<TaskController>().loadFolders();
     });
-  }
-
-  final TextEditingController _taskController = TextEditingController();
-  final TextEditingController _folderController = TextEditingController();
-
-  void _addFolder() {
-    final newFolder = TaskFolder(name: _folderController.text);
-    context.read<TaskController>().addFolder(newFolder).then((folder) {
-      if (folder != null && folder.folder_id != null) {
-        setState(() {
-          currentFolderId = folder.folder_id!;
-        });
-      }
-    });
-    _folderController.clear();
   }
 
   void _sortTasks(List<Task> tasks) {
-    tasks.sort((a, b) {
-      if (a.isCompleted == b.isCompleted) {
-        return 0;
+    _sortedTasks = List.from(tasks);
+    _sortedTasks.sort((a, b) {
+      if (a.isCompleted != b.isCompleted) {
+        return a.isCompleted ? 1 : -1;
       }
-      return a.isCompleted ? 1 : -1;
+      return b.priority.compareTo(a.priority);
     });
   }
 
   void _toggleTaskCompletion(Task task) {
-    final taskIndex = _sortedTasks.indexWhere((t) => t.taskId == task.taskId);
     final updatedTask = task.copyWith(isCompleted: !task.isCompleted);
-
     context.read<TaskController>().updateTask(updatedTask);
-
     setState(() {
-      _sortedTasks[taskIndex] = updatedTask;
+      _sortTasks(context.read<TaskController>().tasks);
     });
-
-    _listKey.currentState!.removeItem(
-      taskIndex,
-      (context, animation) => _buildAnimatedItem(updatedTask, animation),
-      duration: Duration(milliseconds: 250),
-    );
-
-    Future.delayed(Duration(milliseconds: 250), () {
-      setState(() {
-        _sortTasks(_sortedTasks);
-      });
-
-      final newIndex =
-          _sortedTasks.indexWhere((t) => t.taskId == updatedTask.taskId);
-      _listKey.currentState!
-          .insertItem(newIndex, duration: Duration(milliseconds: 250));
-    });
-  }
-
-  void _editTask(BuildContext context, Task task) {
-    _taskController.text = task.name;
-    showCupertinoDialog(
-      context: context,
-      builder: (context) {
-        return KarmanDialogWindow(
-          controller: _taskController,
-          onSave: () {
-            final updatedTask = task.copyWith(name: _taskController.text);
-            context.read<TaskController>().updateTask(updatedTask);
-            _taskController.clear();
-            Navigator.of(context).pop();
-          },
-          onCancel: () {
-            _taskController.clear();
-            Navigator.of(context).pop();
-          },
-          initialText: task.name,
-        );
-      },
-    );
   }
 
   void _deleteTask(BuildContext context, int id) {
-    final index = _sortedTasks.indexWhere((task) => task.taskId == id);
-    if (index != -1) {
-      final removedTask = _sortedTasks.removeAt(index);
-      context.read<TaskController>().deleteTask(id);
-
-      _listKey.currentState!.removeItem(
-        index,
-        (context, animation) => _buildAnimatedItem(removedTask, animation),
-        duration: Duration(milliseconds: 250),
-      );
-    }
+    context.read<TaskController>().deleteTask(id);
   }
 
   void _addTask() {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) {
-        return KarmanDialogWindow(
-          controller: _taskController,
-          onSave: () {
-            final newTask = Task(
-              name: _taskController.text,
-              priority: 1,
-              folderId: currentFolderId,
-            );
-            context.read<TaskController>().addTask(newTask).then((task) {
-              if (task != null) {
-                setState(() {
-                  _sortedTasks.insert(0, task);
-                });
-                if (_listKey.currentState != null) {
-                  _listKey.currentState!
-                      .insertItem(0, duration: Duration(milliseconds: 250));
-                }
-              }
-            });
-            _taskController.clear();
-            Navigator.of(context).pop();
-          },
-          onCancel: () {
-            _taskController.clear();
-            Navigator.of(context).pop();
-          },
-        );
-      },
-    );
+    _openTaskDetails(null);
   }
 
-  void _openDrawer() {
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) {
-        return FolderDrawer(
-          onFolderSelected: (folder) {
-            setState(() {
-              currentFolderId = folder.folder_id!;
-            });
-          },
-          controller: _folderController,
-          onCreateFolder: _addFolder,
-        );
-      },
-    );
-  }
-
-  void _openTaskDetails(Task task) {
+  void _openTaskDetails(Task? task) {
     showCupertinoModalPopup(
       context: context,
       builder: (context) {
         return TaskDetailsSheet(
           task: task,
+          isNewTask: task == null,
         );
       },
-    );
+    ).then((_) {
+      setState(() {
+        _sortTasks(context.read<TaskController>().tasks);
+      });
+    });
   }
 
-  String getAppbarTitle(List<TaskFolder> folders) {
-    if (folders.isEmpty) {
-      return "¯\\_(ツ)_/¯";
-    } else {
-      final currentFolder = folders.firstWhere(
-        (folder) => folder.folder_id == currentFolderId,
-        orElse: () => TaskFolder(folder_id: -1, name: 'Unknown Folder'),
-      );
-      return currentFolder.name;
-    }
+  void _toggleSection(int priority) {
+    setState(() {
+      _expandedSections[priority] = !_expandedSections[priority]!;
+    });
+  }
+
+  void _clearCompletedTasks() {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text('Clear Completed Tasks'),
+        content: Text('Are you sure you want to delete all completed tasks?'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            child: Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.read<TaskController>().clearCompletedTasks();
+            },
+            child: Text('Clear'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<TaskController>(
       builder: (context, taskController, child) {
-        final folders = taskController.folders;
-        final tasks = taskController.getTasksForFolder(currentFolderId);
-
-        if (folders.isEmpty) {
-          return CupertinoPageScaffold(
-            navigationBar: CupertinoNavigationBar(
-              backgroundColor: Colors.black,
-              middle: Text(
-                "Folder-less and fancy-free!",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              leading: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: _openDrawer,
-                child: Icon(
-                  CupertinoIcons.square_stack,
-                  color: CupertinoColors.white,
-                  size: 20,
-                ),
-              ),
-            ),
-            child: SafeArea(
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Your tasks are feeling homeless!",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 30),
-                    Text(
-                      "Click the icon in the top left to create a new folder.",
-                      style: TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
+        _sortTasks(taskController.tasks);
+        final incompleteTasks =
+            _sortedTasks.where((task) => !task.isCompleted).length;
+        final hasCompletedTasks = _sortedTasks.any((task) => task.isCompleted);
 
         return CupertinoPageScaffold(
+          backgroundColor: CupertinoColors.black,
           navigationBar: CupertinoNavigationBar(
-            backgroundColor: Colors.black,
-            middle: Text(
-              getAppbarTitle(folders),
-              style: TextStyle(
-                fontSize: 20,
+            backgroundColor: CupertinoColors.black,
+            border: null,
+            leading: CupertinoButton(
+              onPressed: hasCompletedTasks ? _clearCompletedTasks : null,
+              child: Icon(
+                CupertinoIcons.bin_xmark_fill,
+                color: hasCompletedTasks
+                    ? CupertinoColors.white
+                    : CupertinoColors.systemGrey,
+                size: 32,
               ),
             ),
-            leading: CupertinoButton(
-              padding: EdgeInsets.zero,
-              onPressed: _openDrawer,
-              child: Icon(
-                CupertinoIcons.square_stack,
-                color: CupertinoColors.white,
-                size: 20,
-              ),
+            middle: Text(
+              '$incompleteTasks tasks left',
+              style: TextStyle(color: CupertinoColors.white),
             ),
             trailing: CupertinoButton(
-              padding: EdgeInsets.zero,
               onPressed: _addTask,
               child: Icon(
-                CupertinoIcons.plus,
+                CupertinoIcons.plus_circle_fill,
                 color: CupertinoColors.white,
-                size: 20,
+                size: 32,
               ),
             ),
           ),
           child: SafeArea(
-            child: Column(
-              children: [
-                SizedBox(height: 8),
-                CompletedTasksHeader(currentFolderId: currentFolderId),
-                Expanded(
-                  child: _buildTasksList(folders, tasks),
-                ),
-              ],
-            ),
+            child: _buildTasksList(_sortedTasks),
           ),
         );
       },
     );
   }
 
-  Widget _buildTasksList(List<TaskFolder> folders, List<Task> tasks) {
-    if (tasks.isEmpty) {
-      return Center(
-        child: Text(
-          'This space craves your brilliant ideas. Add one!',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      );
-    } else {
-      if (_sortedTasks.isEmpty || !listEquals(_sortedTasks, tasks)) {
-        _sortedTasks = List.from(tasks);
-        _sortTasks(_sortedTasks);
-      }
-
-      return Builder(
-        builder: (context) {
-          return AnimatedList(
-            key: _listKey,
-            initialItemCount: _sortedTasks.length,
-            itemBuilder: (context, index, animation) {
-              return _buildAnimatedItem(_sortedTasks[index], animation);
-            },
-          );
-        },
-      );
-    }
+  Widget _buildTasksList(List<Task> tasks) {
+    return AnimatedSize(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: tasks.isEmpty
+          ? Center(
+              child: Text(
+                'This space craves your brilliant ideas. Add one!',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: CupertinoColors.systemGrey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
+          : ListView(
+              children: [
+                _buildPrioritySection(3, tasks),
+                _buildPrioritySection(2, tasks),
+                _buildPrioritySection(1, tasks),
+                _buildCompletedSection(tasks),
+              ],
+            ),
+    );
   }
 
-  Widget _buildAnimatedItem(Task task, Animation<double> animation) {
-    return SizeTransition(
-      sizeFactor: animation,
-      child: GestureDetector(
-        onTap: () => _openTaskDetails(task),
-        child: TaskTile(
-          key: ValueKey(task.taskId),
-          task: task,
-          onChanged: (value) => _toggleTaskCompletion(task),
-          onEdit: (context) => _editTask(context, task),
-          onDelete: (context) => _deleteTask(context, task.taskId!),
+  Widget _buildPrioritySection(int priority, List<Task> allTasks) {
+    final tasksInPriority = allTasks
+        .where((task) => task.priority == priority && !task.isCompleted)
+        .toList();
+
+    return AnimatedSize(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: tasksInPriority.isEmpty
+          ? SizedBox.shrink()
+          : Column(
+              children: [
+                GestureDetector(
+                  onTap: () => _toggleSection(priority),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                    color: CupertinoColors.black,
+                    child: Row(
+                      children: [
+                        Icon(
+                          _expandedSections[priority]!
+                              ? CupertinoIcons.flag_circle
+                              : CupertinoIcons.flag_circle_fill,
+                          color: priority == 3
+                              ? Colors.red
+                              : (priority == 2 ? Colors.yellow : Colors.green),
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          priority == 3
+                              ? 'High'
+                              : (priority == 2 ? 'Medium' : 'Low'),
+                          style: TextStyle(
+                              color: CupertinoColors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Spacer(),
+                        Icon(
+                          _expandedSections[priority]!
+                              ? CupertinoIcons.chevron_up
+                              : CupertinoIcons.chevron_down,
+                          color: CupertinoColors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 300),
+                  height: _expandedSections[priority]!
+                      ? tasksInPriority.length * 70.0
+                      : 0,
+                  child: AnimatedOpacity(
+                    duration: Duration(milliseconds: 300),
+                    opacity: _expandedSections[priority]! ? 1.0 : 0.0,
+                    child: ListView(
+                      physics: NeverScrollableScrollPhysics(),
+                      children: tasksInPriority
+                          .map(
+                            (task) => AnimatedSwitcher(
+                              duration: Duration(milliseconds: 300),
+                              child: GestureDetector(
+                                key: ValueKey(task.taskId),
+                                onTap: () => _openTaskDetails(task),
+                                child: TaskTile(
+                                  key: ValueKey(task.taskId),
+                                  task: task,
+                                  onChanged: (value) =>
+                                      _toggleTaskCompletion(task),
+                                  onDelete: (context) =>
+                                      _deleteTask(context, task.taskId!),
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildCompletedSection(List<Task> allTasks) {
+    final completedTasks = allTasks.where((task) => task.isCompleted).toList();
+
+    if (completedTasks.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () => _toggleSection(0),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            color: CupertinoColors.black,
+            child: Row(
+              children: [
+                Icon(
+                  _expandedSections[0]!
+                      ? CupertinoIcons.checkmark_circle
+                      : CupertinoIcons.checkmark_circle_fill,
+                  color: CupertinoColors.systemGrey,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'Completed',
+                  style: TextStyle(
+                      color: CupertinoColors.white,
+                      fontWeight: FontWeight.bold),
+                ),
+                Spacer(),
+                Icon(
+                  _expandedSections[0]!
+                      ? CupertinoIcons.chevron_up
+                      : CupertinoIcons.chevron_down,
+                  color: CupertinoColors.white,
+                ),
+              ],
+            ),
+          ),
         ),
-      ),
+        AnimatedContainer(
+          duration: Duration(milliseconds: 300),
+          height: _expandedSections[0]! ? completedTasks.length * 70.0 : 0,
+          child: AnimatedOpacity(
+            duration: Duration(milliseconds: 300),
+            opacity: _expandedSections[0]! ? 1.0 : 0.0,
+            child: ListView(
+              physics: NeverScrollableScrollPhysics(),
+              children: completedTasks
+                  .map(
+                    (task) => AnimatedSwitcher(
+                      duration: Duration(milliseconds: 300),
+                      child: GestureDetector(
+                        key: ValueKey(task.taskId),
+                        onTap: () => _openTaskDetails(task),
+                        child: TaskTile(
+                          key: ValueKey(task.taskId),
+                          task: task,
+                          onChanged: (value) => _toggleTaskCompletion(task),
+                          onDelete: (context) =>
+                              _deleteTask(context, task.taskId!),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -5,7 +5,6 @@ import 'package:karman_app/controllers/task/task_controller.dart';
 import 'package:karman_app/services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:path_provider/path_provider.dart';
 import 'package:karman_app/database/database_service.dart';
 
 void main() async {
@@ -13,7 +12,6 @@ void main() async {
   await NotificationService.init();
   tz.initializeTimeZones();
 
-  final dir = await getApplicationDocumentsDirectory();
   final databaseService = DatabaseService();
   await databaseService.database; // This initializes the database
 
@@ -23,7 +21,6 @@ void main() async {
 
   // Load initial data
   await taskController.loadTasks();
-  await taskController.loadFolders();
   await habitController.loadHabits();
 
   runApp(MultiProvider(
@@ -36,6 +33,8 @@ void main() async {
 }
 
 class KarmanApp extends StatelessWidget {
+  const KarmanApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(

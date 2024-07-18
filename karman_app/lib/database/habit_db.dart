@@ -4,32 +4,30 @@ class HabitDatabase {
   final String tableName = 'habits';
   final String logTableName = 'habit_logs';
 
-  Future<void> createTable(Database database) async {
+  Future<void> createTables(Database database) async {
     await database.execute('''
       CREATE TABLE IF NOT EXISTS $tableName (
-        habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        status INTEGER NOT NULL,
-        start_date TEXT NOT NULL,
-        end_date TEXT,
-        current_streak INTEGER NOT NULL,
-        longest_streak INTEGER NOT NULL
+        habitId INTEGER PRIMARY KEY AUTOINCREMENT,
+        habitName TEXT NOT NULL,
+        reminderTime INTEGER,
+        currentStreak INTEGER NOT NULL,
+        bestStreak INTEGER NOT NULL,
+        isCompletedToday INTEGER NOT NULL
       )
     ''');
 
     await database.execute('''
       CREATE TABLE IF NOT EXISTS $logTableName (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        habit_id INTEGER NOT NULL,
+        habitId INTEGER NOT NULL,
         date TEXT NOT NULL,
-        status INTEGER NOT NULL,
-        FOREIGN KEY (habit_id) REFERENCES $tableName (habit_id),
-        UNIQUE (habit_id, date)
+        completedForToday INTEGER NOT NULL,
+        log TEXT,
+        FOREIGN KEY (habitId) REFERENCES $tableName (habitId)
       )
     ''');
   }
 
-  // CRUD operations for habits
   Future<int> createHabit(Database db, Map<String, dynamic> habit) async {
     return await db.insert(tableName, habit);
   }
@@ -38,24 +36,33 @@ class HabitDatabase {
     return await db.query(tableName);
   }
 
+  Future<Map<String, dynamic>?> getHabit(Database db, int habitId) async {
+    final habits = await db.query(
+      tableName,
+      where: 'habitId = ?',
+      whereArgs: [habitId],
+      limit: 1,
+    );
+    return habits.isNotEmpty ? habits.first : null;
+  }
+
   Future<int> updateHabit(Database db, Map<String, dynamic> habit) async {
     return await db.update(
       tableName,
       habit,
-      where: 'habit_id = ?',
-      whereArgs: [habit['habit_id']],
+      where: 'habitId = ?',
+      whereArgs: [habit['habitId']],
     );
   }
 
   Future<int> deleteHabit(Database db, int id) async {
     return await db.delete(
       tableName,
-      where: 'habit_id = ?',
+      where: 'habitId = ?',
       whereArgs: [id],
     );
   }
 
-  // CRUD operations for habit logs
   Future<int> createHabitLog(Database db, Map<String, dynamic> log) async {
     return await db.insert(logTableName, log);
   }
@@ -64,25 +71,45 @@ class HabitDatabase {
       Database db, int habitId) async {
     return await db.query(
       logTableName,
-      where: 'habit_id = ?',
+      where: 'habitId = ?',
+      whereArgs: [habitId],
+      orderBy: 'date DESC',
+    );
+  }
+
+  Future<int> deleteHabitLogs(Database db, int habitId) async {
+    return await db.delete(
+      logTableName,
+      where: 'habitId = ?',
       whereArgs: [habitId],
     );
   }
 
-  Future<int> updateHabitLog(Database db, Map<String, dynamic> log) async {
-    return await db.update(
+  Future<Map<String, dynamic>?> getLatestHabitLog(
+      Database db, int habitId) async {
+    final logs = await db.query(
       logTableName,
-      log,
-      where: 'id = ?',
-      whereArgs: [log['id']],
+      where: 'habitId = ?',
+      whereArgs: [habitId],
+      orderBy: 'date DESC',
+      limit: 1,
+    );
+    return logs.isNotEmpty ? logs.first : null;
+  }
+
+  Future<List<Map<String, dynamic>>> getHabitLogsForDate(
+      Database db, int habitId, String date) async {
+    return await db.query(
+      logTableName,
+      where: 'habitId = ? AND date = ?',
+      whereArgs: [habitId, date],
     );
   }
 
-  Future<int> deleteHabitLog(Database db, int id) async {
-    return await db.delete(
-      logTableName,
-      where: 'id = ?',
-      whereArgs: [id],
+  Future<int> resetAllHabitsCompletionStatus(Database db) async {
+    return await db.update(
+      tableName,
+      {'isCompletedToday': 0},
     );
   }
 }

@@ -36,6 +36,6 @@ class DatabaseService {
 
   Future<void> createDatabase(Database database, int version) async {
     await TaskDatabase().createTable(database);
-    await HabitDatabase().createTable(database);
+    await HabitDatabase().createTables(database);
   }
 }

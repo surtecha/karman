@@ -2,17 +2,28 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class KarmanDialogWindow extends StatelessWidget {
+  final String title;
+  final String placeholder;
   final TextEditingController controller;
   final VoidCallback onSave;
   final VoidCallback onCancel;
   final String? initialText;
+  final String cancelText;
+  final String saveText;
+  final Widget? additionalContent;
 
-  KarmanDialogWindow({super.key, 
+  const KarmanDialogWindow({
+    Key? key,
+    required this.title,
+    required this.placeholder,
     required this.controller,
     required this.onSave,
     required this.onCancel,
     this.initialText,
-  });
+    this.cancelText = 'Cancel',
+    this.saveText = 'Save',
+    this.additionalContent,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,20 +32,28 @@ class KarmanDialogWindow extends StatelessWidget {
     }
 
     return CupertinoAlertDialog(
-      title: Text(initialText == null ? 'Add Task' : 'Edit Task'),
-      content: CupertinoTextField(
-        controller: controller,
-        placeholder: 'Enter task name',
-        autofocus: true,
+      title: Text(title),
+      content: Column(
+        children: [
+          CupertinoTextField(
+            controller: controller,
+            placeholder: placeholder,
+            autofocus: true,
+          ),
+          if (additionalContent != null) ...[
+            const SizedBox(height: 16),
+            additionalContent!,
+          ],
+        ],
       ),
       actions: [
         CupertinoDialogAction(
           onPressed: onCancel,
-          child: Text('Cancel'),
+          child: Text(cancelText),
         ),
         CupertinoDialogAction(
           onPressed: onSave,
-          child: Text('Save'),
+          child: Text(saveText),
         ),
       ],
     );
