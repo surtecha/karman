@@ -56,38 +56,47 @@ class _HabitDetailsSheetState extends State<HabitDetailsSheet> {
           : null,
     );
 
+    final habitController = context.read<HabitController>();
+
     if (widget.isNewHabit) {
-      context.read<HabitController>().addHabit(updatedHabit);
+      habitController.addHabit(updatedHabit);
     } else {
-      context.read<HabitController>().updateHabit(updatedHabit);
+      habitController.updateHabit(updatedHabit);
     }
 
-    if (updatedHabit.reminderTime != null) {
-      final now = DateTime.now();
-      final scheduledDate = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        _reminderTime!.hour,
-        _reminderTime!.minute,
-      );
-
-      if (scheduledDate.isBefore(now)) {
-        scheduledDate.add(Duration(days: 1));
+    // Schedule or cancel reminder only if the habit has been saved (has an ID)
+    if (updatedHabit.habitId != null) {
+      if (_isReminderEnabled && _reminderTime != null) {
+        _scheduleReminder(updatedHabit);
+      } else {
+        NotificationService.cancelNotification(updatedHabit.habitId!);
       }
-
-      NotificationService.scheduleNotification(
-        id: updatedHabit.habitId!,
-        title: 'Habit Reminder',
-        body: updatedHabit.habitName,
-        scheduledDate: scheduledDate,
-        payload: 'habit_${updatedHabit.habitId}',
-      );
-    } else if (updatedHabit.habitId != null) {
-      NotificationService.cancelNotification(updatedHabit.habitId!);
     }
 
     Navigator.of(context).pop();
+  }
+
+  void _scheduleReminder(Habit habit) {
+    final now = DateTime.now();
+    final scheduledDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      _reminderTime!.hour,
+      _reminderTime!.minute,
+    );
+
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate.add(Duration(days: 1));
+    }
+
+    NotificationService.scheduleNotification(
+      id: habit.habitId!,
+      title: 'Habit Reminder',
+      body: habit.habitName,
+      scheduledDate: scheduledDate,
+      payload: 'habit_${habit.habitId}',
+    );
   }
 
   void _showQuirkyDialog(String title, String content) {
@@ -115,7 +124,7 @@ class _HabitDetailsSheetState extends State<HabitDetailsSheet> {
       child: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 40,
             left: 20,
             right: 20,
             top: 20,

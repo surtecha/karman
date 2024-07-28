@@ -17,52 +17,75 @@ class HabitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Material(
-        color: Colors.transparent,
-        child: Slidable(
-          key: ValueKey(habit.habitId),
-          endActionPane: ActionPane(
-            motion: const DrawerMotion(),
-            children: [
-              SlidableAction(
-                onPressed: (context) => _deleteHabit(context),
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.redAccent,
-                icon: CupertinoIcons.delete,
-                label: 'Delete',
-              ),
-            ],
-          ),
-          child: GestureDetector(
-            onTap: () => _showHabitDetailsSheet(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.black,
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.grey[800]!,
-                    width: 1,
-                  ),
+    return Material(
+      color: Colors.transparent,
+      child: Slidable(
+        key: ValueKey(habit.habitId),
+        endActionPane: ActionPane(
+          motion: const DrawerMotion(),
+          children: [
+            SlidableAction(
+              onPressed: (context) => _deleteHabit(context),
+              backgroundColor: CupertinoColors.darkBackgroundGray,
+              foregroundColor: Colors.redAccent,
+              icon: CupertinoIcons.delete,
+              label: 'Delete',
+            ),
+          ],
+        ),
+        child: GestureDetector(
+          onTap: () => _showHabitDetailsSheet(context),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black,
+              border: Border(
+                bottom: BorderSide(
+                  color: CupertinoColors.darkBackgroundGray,
+                  width: 1,
                 ),
               ),
+            ),
+            child: IntrinsicHeight(
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(
+                    width: 60,
+                    child: Center(
+                      child: _buildCompletionIcon(context),
+                    ),
+                  ),
                   Expanded(
-                    child: Text(
-                      habit.habitName,
-                      style: TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 18,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            habit.habitName,
+                            style: TextStyle(
+                              color: habit.isCompletedToday
+                                  ? Colors.grey[700]
+                                  : CupertinoColors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Row(
+                              children: [
+                                _buildStreakIcon(),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                   SizedBox(width: 16),
-                  _buildStreakIcon(),
-                  SizedBox(width: 16),
-                  _buildCompletionIcon(context),
                 ],
               ),
             ),
@@ -73,26 +96,22 @@ class HabitTile extends StatelessWidget {
   }
 
   Widget _buildStreakIcon() {
-    return SizedBox(
-      width: 80,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Icon(
-            CupertinoIcons.flame_fill,
-            color: _getStreakColor(),
-            size: 24,
+    return Row(
+      children: [
+        Icon(
+          CupertinoIcons.flame_fill,
+          color: _getStreakColor(),
+          size: 20,
+        ),
+        SizedBox(width: 4),
+        Text(
+          habit.currentStreak.toString(),
+          style: TextStyle(
+            color: CupertinoColors.white,
+            fontSize: 16,
           ),
-          SizedBox(width: 4),
-          Text(
-            habit.currentStreak.toString(),
-            style: TextStyle(
-              color: CupertinoColors.white,
-              fontSize: 16,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -109,17 +128,16 @@ class HabitTile extends StatelessWidget {
   }
 
   Widget _buildCompletionIcon(BuildContext context) {
-    return Container(
-      width: 40,
-      alignment: Alignment.centerRight,
-      child: GestureDetector(
-        onTap: habit.isCompletedToday
-            ? null
-            : () => _showHabitCompletionSheet(context),
+    return GestureDetector(
+      onTap: habit.isCompletedToday
+          ? null
+          : () => _showHabitCompletionSheet(context),
+      child: Transform.scale(
+        scale: 1.3,
         child: Icon(
           habit.isCompletedToday
-              ? CupertinoIcons.lock_fill
-              : CupertinoIcons.check_mark_circled,
+              ? CupertinoIcons.checkmark_circle_fill
+              : CupertinoIcons.circle,
           color: habit.isCompletedToday
               ? CupertinoColors.systemGrey
               : CupertinoColors.white,

@@ -1,11 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:karman_app/app_shell.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
-  static Future<void> init() async {
+  static late GlobalKey<NavigatorState> navigatorKey;
+
+  static Future<void> init(GlobalKey<NavigatorState> key) async {
+    navigatorKey = key;
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const DarwinInitializationSettings initializationSettingsIOS =
@@ -30,8 +35,33 @@ class NotificationService {
   static Future<void> onDidReceiveNotificationResponse(
       NotificationResponse notificationResponse) async {
     final String? payload = notificationResponse.payload;
-    if (notificationResponse.payload != null) {
-      print('notification payload: $payload');
+    if (payload != null) {
+      if (payload.startsWith('task_')) {
+        navigateToTasksPage();
+      } else if (payload.startsWith('habit_')) {
+        navigateToHabitsPage();
+      }
+    }
+  }
+
+  static void navigateToTasksPage() {
+    _navigateToPage(1);
+  }
+
+  static void navigateToHabitsPage() {
+    _navigateToPage(0);
+  }
+
+  static void _navigateToPage(int tabIndex) {
+    final context = navigatorKey.currentContext;
+    if (context != null) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      Future.delayed(Duration(milliseconds: 100), () {
+        final appShellState = AppShell.globalKey.currentState;
+        if (appShellState != null) {
+          appShellState.switchToTab(tabIndex);
+        }
+      });
     }
   }
 

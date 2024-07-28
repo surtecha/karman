@@ -8,11 +8,11 @@ class ReminderButton extends StatelessWidget {
   final bool isEnabled;
 
   const ReminderButton({
-    Key? key,
+    super.key,
     this.selectedDateTime,
     required this.onReminderSet,
     this.isEnabled = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +37,14 @@ class ReminderButton extends StatelessWidget {
   }
 
   void _showReminderPicker(BuildContext context) {
-    DateTime tempDateTime = selectedDateTime ?? DateTime.now();
+    DateTime now = DateTime.now();
+    DateTime minimumDate = now.add(Duration(minutes: 1));
+    DateTime initialDateTime = selectedDateTime ?? minimumDate;
+
+    // Ensure initialDateTime is not before minimumDate
+    if (initialDateTime.isBefore(minimumDate)) {
+      initialDateTime = minimumDate;
+    }
 
     showCupertinoModalPopup(
       context: context,
@@ -57,8 +64,12 @@ class ReminderButton extends StatelessWidget {
                   CupertinoButton(
                     child: Text('Done'),
                     onPressed: () {
-                      onReminderSet(tempDateTime);
-                      Navigator.of(context).pop();
+                      if (initialDateTime.isAfter(now)) {
+                        onReminderSet(initialDateTime);
+                        Navigator.of(context).pop();
+                      } else {
+                        _showPastDateAlert(context);
+                      }
                     },
                   ),
                 ],
@@ -66,9 +77,10 @@ class ReminderButton extends StatelessWidget {
               Expanded(
                 child: CupertinoDatePicker(
                   mode: CupertinoDatePickerMode.dateAndTime,
-                  initialDateTime: tempDateTime,
+                  initialDateTime: initialDateTime,
+                  minimumDate: minimumDate,
                   onDateTimeChanged: (DateTime newDateTime) {
-                    tempDateTime = newDateTime;
+                    initialDateTime = newDateTime;
                   },
                 ),
               ),
@@ -76,6 +88,26 @@ class ReminderButton extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  void _showPastDateAlert(BuildContext context) {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text('Time Travel Not Invented Yet!',
+            style: TextStyle(fontSize: 18)),
+        content: Text(
+            'Unless you have a time machine, we can\'t remind you in the past.'),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            child: Text('Got it!'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
     );
   }
 

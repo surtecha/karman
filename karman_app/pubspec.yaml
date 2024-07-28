@@ -81,6 +81,7 @@ flutter:
     - lib/assets/audio/rain.mp3
     - lib/assets/audio/forest.mp3
     - lib/assets/audio/ocean.mp3
+    - lib/assets/audio/night.mp3
     - lib/assets/audio/airplane.mp3
     - lib/assets/audio/subtle_chime.mp3
   #   - images/a_dot_ham.jpeg

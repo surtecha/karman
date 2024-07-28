@@ -20,6 +20,12 @@ class SoundManager {
       'color': CupertinoColors.systemCyan
     },
     {
+      'name': 'Night',
+      'icon': CupertinoIcons.moon_fill,
+      'file': 'lib/assets/audio/night.mp3',
+      'color': CupertinoColors.systemPurple
+    },
+    {
       'name': 'Ocean',
       'icon': Icons.waves,
       'file': 'lib/assets/audio/ocean.mp3',
@@ -69,7 +75,7 @@ class SoundManager {
 
   IconData get currentIcon {
     if (currentSound == null) {
-      return CupertinoIcons.speaker_slash_fill;
+      return CupertinoIcons.speaker_slash;
     }
     return sounds.firstWhere((sound) => sound['file'] == currentSound)['icon'];
   }

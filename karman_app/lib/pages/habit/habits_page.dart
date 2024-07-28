@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:karman_app/components/habit/habit_tile.dart';
 import 'package:karman_app/controllers/habit/habit_controller.dart';
 import 'package:karman_app/models/habits/habit.dart';
+import 'package:karman_app/pages/habit/habit_details_sheet.dart';
 import 'package:provider/provider.dart';
 
 class HabitsPage extends StatefulWidget {
@@ -13,60 +13,26 @@ class HabitsPage extends StatefulWidget {
 }
 
 class _HabitsPageState extends State<HabitsPage> {
-  final TextEditingController _newHabitController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final habitController =
           Provider.of<HabitController>(context, listen: false);
-      habitController.checkAndResetStreaks();
       habitController.loadHabits();
+      habitController.scheduleReminders();
     });
   }
 
-  @override
-  void dispose() {
-    _newHabitController.dispose();
-    super.dispose();
-  }
-
   void _showAddHabitDialog() {
-    showCupertinoDialog(
+    showCupertinoModalPopup(
       context: context,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        title: Text('Add New Habit'),
-        content: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: CupertinoTextField(
-            controller: _newHabitController,
-            placeholder: 'Enter habit name',
-            autofocus: true,
-          ),
+      builder: (BuildContext context) => HabitDetailsSheet(
+        habit: Habit(
+          habitName: '',
+          startDate: DateTime.now(),
         ),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              _newHabitController.clear();
-            },
-          ),
-          CupertinoDialogAction(
-            child: Text('Add'),
-            onPressed: () {
-              if (_newHabitController.text.isNotEmpty) {
-                final newHabit =
-                    Habit(habitName: _newHabitController.text.trim());
-                Provider.of<HabitController>(context, listen: false)
-                    .addHabit(newHabit);
-                Navigator.of(context).pop();
-                _newHabitController.clear();
-              }
-            },
-          ),
-        ],
+        isNewHabit: true,
       ),
     );
   }
@@ -86,7 +52,7 @@ class _HabitsPageState extends State<HabitsPage> {
             trailing: CupertinoButton(
               onPressed: _showAddHabitDialog,
               child: Icon(
-                CupertinoIcons.plus_circle_fill,
+                CupertinoIcons.plus_circle,
                 color: CupertinoColors.white,
                 size: 32,
               ),
@@ -97,17 +63,21 @@ class _HabitsPageState extends State<HabitsPage> {
                 ? Center(
                     child: Text(
                       'No habits yet. Add one to get started!',
-                      style: TextStyle(color: CupertinoColors.systemGrey),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: CupertinoColors.systemGrey,
+                      ),
                     ),
                   )
-                : ListView.builder(
-                    itemCount: habitController.habits.length,
-                    itemBuilder: (context, index) {
-                      final habit = habitController.habits[index];
-                      return HabitTile(
-                        habit: habit,
-                      );
-                    },
+                : Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: ListView.builder(
+                      itemCount: habitController.habits.length,
+                      itemBuilder: (context, index) {
+                        final habit = habitController.habits[index];
+                        return HabitTile(habit: habit);
+                      },
+                    ),
                   ),
           ),
         );

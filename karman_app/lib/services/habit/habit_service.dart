@@ -47,25 +47,22 @@ class HabitService {
   }
 
   Future<void> resetStreaksIfNeeded() async {
-    final db = await _databaseService.database;
     final habits = await getHabits();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     for (var habit in habits) {
-      final latestLog =
-          await _habitDatabase.getLatestHabitLog(db, habit.habitId!);
-      if (latestLog != null) {
-        final latestLogDate = DateTime.parse(latestLog['date']);
-        final logDay = DateTime(
-            latestLogDate.year, latestLogDate.month, latestLogDate.day);
+      if (habit.lastCompletionDate != null) {
+        final lastCompletionDay = DateTime(
+          habit.lastCompletionDate!.year,
+          habit.lastCompletionDate!.month,
+          habit.lastCompletionDate!.day,
+        );
 
-        if (today.isAfter(logDay)) {
-          // It's a new day, reset isCompletedToday
+        if (today.isAfter(lastCompletionDay)) {
           habit.isCompletedToday = false;
 
-          if (today.difference(logDay).inDays > 1) {
-            // More than one day has passed, reset streak
+          if (today.difference(lastCompletionDay).inDays > 1) {
             habit.resetStreak();
           }
 
@@ -77,42 +74,29 @@ class HabitService {
 
   Future<void> completeHabitForToday(Habit habit, String? log) async {
     final db = await _databaseService.database;
-    final today = DateTime.now();
-    final todayString = today.toIso8601String().split('T')[0];
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
-    // Check if the habit has already been completed today
     final todayLogs = await _habitDatabase.getHabitLogsForDate(
-        db, habit.habitId!, todayString);
+      db,
+      habit.habitId!,
+      today.toIso8601String(),
+    );
+
     if (todayLogs.isNotEmpty && todayLogs.first['completedForToday'] == 1) {
-      // Habit already completed today, no need to update
       return;
     }
 
-    // Create new log for today
     final todayLog = HabitLog(
       habitId: habit.habitId!,
       completedForToday: true,
-      date: today,
+      date: now,
       log: log,
     );
     await createHabitLog(todayLog);
 
-    // Check if the streak should be incremented
-    final yesterday = today.subtract(Duration(days: 1));
-    final yesterdayString = yesterday.toIso8601String().split('T')[0];
-    final yesterdayLogs = await _habitDatabase.getHabitLogsForDate(
-        db, habit.habitId!, yesterdayString);
+    habit.updateStreak(today);
 
-    if (yesterdayLogs.isNotEmpty &&
-        yesterdayLogs.first['completedForToday'] == 1) {
-      // Habit was completed yesterday, increment streak
-      habit.incrementStreak();
-    } else {
-      // Habit was not completed yesterday, reset streak to 1
-      habit.currentStreak = 1;
-    }
-
-    habit.isCompletedToday = true;
     await updateHabit(habit);
   }
 

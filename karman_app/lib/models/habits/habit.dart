@@ -5,6 +5,8 @@ class Habit {
   int currentStreak;
   int bestStreak;
   bool isCompletedToday;
+  DateTime startDate;
+  DateTime? lastCompletionDate;
 
   Habit({
     this.habitId,
@@ -13,6 +15,8 @@ class Habit {
     this.currentStreak = 0,
     this.bestStreak = 0,
     this.isCompletedToday = false,
+    required this.startDate,
+    this.lastCompletionDate,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +27,8 @@ class Habit {
       'currentStreak': currentStreak,
       'bestStreak': bestStreak,
       'isCompletedToday': isCompletedToday ? 1 : 0,
+      'startDate': startDate.toIso8601String(),
+      'lastCompletionDate': lastCompletionDate?.toIso8601String(),
     };
   }
 
@@ -36,6 +42,10 @@ class Habit {
       currentStreak: map['currentStreak'],
       bestStreak: map['bestStreak'],
       isCompletedToday: map['isCompletedToday'] == 1,
+      startDate: DateTime.parse(map['startDate']),
+      lastCompletionDate: map['lastCompletionDate'] != null
+          ? DateTime.parse(map['lastCompletionDate'])
+          : null,
     );
   }
 
@@ -46,6 +56,8 @@ class Habit {
     int? currentStreak,
     int? bestStreak,
     bool? isCompletedToday,
+    DateTime? startDate,
+    DateTime? lastCompletionDate,
   }) {
     return Habit(
       habitId: habitId ?? this.habitId,
@@ -54,19 +66,30 @@ class Habit {
       currentStreak: currentStreak ?? this.currentStreak,
       bestStreak: bestStreak ?? this.bestStreak,
       isCompletedToday: isCompletedToday ?? this.isCompletedToday,
+      startDate: startDate ?? this.startDate,
+      lastCompletionDate: lastCompletionDate ?? this.lastCompletionDate,
     );
   }
 
   void resetStreak() {
     currentStreak = 0;
     isCompletedToday = false;
+    startDate = DateTime.now();
+    lastCompletionDate = null;
   }
 
-  void incrementStreak() {
-    currentStreak++;
-    if (currentStreak > bestStreak) {
-      bestStreak = currentStreak;
+  void updateStreak(DateTime completionDate) {
+    if (lastCompletionDate == null ||
+        completionDate.difference(lastCompletionDate!).inDays == 1) {
+      currentStreak++;
+      if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+      }
+    } else if (completionDate.difference(lastCompletionDate!).inDays > 1) {
+      resetStreak();
+      currentStreak = 1;
     }
+    lastCompletionDate = completionDate;
     isCompletedToday = true;
   }
 

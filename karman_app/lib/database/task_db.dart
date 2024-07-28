@@ -50,4 +50,17 @@ class TaskDatabase {
       whereArgs: [1],
     );
   }
+
+  Future<Map<String, dynamic>?> getTaskById(Database db, int id) async {
+    final List<Map<String, dynamic>> maps = await db.query(
+      tableName,
+      where: 'task_id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    return null;
+  }
 }

@@ -12,7 +12,9 @@ class HabitDatabase {
         reminderTime INTEGER,
         currentStreak INTEGER NOT NULL,
         bestStreak INTEGER NOT NULL,
-        isCompletedToday INTEGER NOT NULL
+        isCompletedToday INTEGER NOT NULL,
+        startDate TEXT NOT NULL,
+        lastCompletionDate TEXT
       )
     ''');
 
@@ -68,7 +70,9 @@ class HabitDatabase {
   }
 
   Future<List<Map<String, dynamic>>> getHabitLogs(
-      Database db, int habitId) async {
+    Database db,
+    int habitId,
+  ) async {
     return await db.query(
       logTableName,
       where: 'habitId = ?',
@@ -86,7 +90,9 @@ class HabitDatabase {
   }
 
   Future<Map<String, dynamic>?> getLatestHabitLog(
-      Database db, int habitId) async {
+    Database db,
+    int habitId,
+  ) async {
     final logs = await db.query(
       logTableName,
       where: 'habitId = ?',
@@ -98,7 +104,10 @@ class HabitDatabase {
   }
 
   Future<List<Map<String, dynamic>>> getHabitLogsForDate(
-      Database db, int habitId, String date) async {
+    Database db,
+    int habitId,
+    String date,
+  ) async {
     return await db.query(
       logTableName,
       where: 'habitId = ? AND date = ?',

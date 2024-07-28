@@ -62,7 +62,7 @@ class CircularSlider extends StatelessWidget {
                 },
         ),
         Positioned(
-          bottom: -20,
+          bottom: -18,
           child: CupertinoButton(
             onPressed: onPlayPause,
             child: Icon(

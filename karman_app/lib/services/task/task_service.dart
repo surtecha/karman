@@ -6,7 +6,6 @@ class TaskService {
   final DatabaseService _databaseService = DatabaseService();
   final TaskDatabase _taskDatabase = TaskDatabase();
 
-  // Task operations
   Future<Task> createTask(Task task) async {
     final db = await _databaseService.database;
     final id = await _taskDatabase.createTask(db, task.toMap());
@@ -19,9 +18,10 @@ class TaskService {
     return tasksData.map((taskData) => Task.fromMap(taskData)).toList();
   }
 
-  Future<void> updateTask(Task task) async {
+  Future<Task> updateTask(Task task) async {
     final db = await _databaseService.database;
     await _taskDatabase.updateTask(db, task.toMap());
+    return task;
   }
 
   Future<void> deleteTask(int id) async {
@@ -32,5 +32,11 @@ class TaskService {
   Future<void> deleteCompletedTasks() async {
     final db = await _databaseService.database;
     await _taskDatabase.deleteCompletedTasks(db);
+  }
+
+  Future<Task?> getTaskById(int id) async {
+    final db = await _databaseService.database;
+    final taskData = await _taskDatabase.getTaskById(db, id);
+    return taskData != null ? Task.fromMap(taskData) : null;
   }
 }

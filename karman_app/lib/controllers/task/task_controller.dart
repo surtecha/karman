@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:karman_app/models/task/task.dart';
 import '../../services/task/task_service.dart';
+import 'dart:async';
 
 class TaskController extends ChangeNotifier {
   final TaskService _taskService = TaskService();
 
   List<Task> _tasks = [];
+  final Map<int, Timer> _completionTimers = {};
+  final Map<int, bool> _pendingCompletions = {};
 
   List<Task> get tasks => _tasks;
 
@@ -26,18 +29,48 @@ class TaskController extends ChangeNotifier {
     }
   }
 
-  Future<void> updateTask(Task task) async {
+  Future<Task> updateTask(Task task) async {
     await _taskService.updateTask(task);
     final index = _tasks.indexWhere((t) => t.taskId == task.taskId);
     if (index != -1) {
       _tasks[index] = task;
       notifyListeners();
     }
+    return task;
+  }
+
+  void toggleTaskCompletion(Task task) {
+    final taskId = task.taskId!;
+    if (_pendingCompletions[taskId] == true) {
+      _completionTimers[taskId]?.cancel();
+      _completionTimers.remove(taskId);
+      _pendingCompletions[taskId] = false;
+    } else if (!task.isCompleted) {
+      _pendingCompletions[taskId] = true;
+      _completionTimers[taskId] = Timer(Duration(seconds: 3), () {
+        final updatedTask = task.copyWith(isCompleted: true);
+        updateTask(updatedTask);
+        _completionTimers.remove(taskId);
+        _pendingCompletions.remove(taskId);
+        notifyListeners();
+      });
+    } else {
+      final updatedTask = task.copyWith(isCompleted: false);
+      updateTask(updatedTask);
+    }
+    notifyListeners();
+  }
+
+  bool isTaskPendingCompletion(int taskId) {
+    return _pendingCompletions[taskId] == true;
   }
 
   Future<void> deleteTask(int id) async {
     await _taskService.deleteTask(id);
     _tasks.removeWhere((task) => task.taskId == id);
+    _completionTimers[id]?.cancel();
+    _completionTimers.remove(id);
+    _pendingCompletions.remove(id);
     notifyListeners();
   }
 
@@ -53,5 +86,22 @@ class TaskController extends ChangeNotifier {
 
   List<Task> getIncompleteTasks() {
     return _tasks.where((task) => !task.isCompleted).toList();
+  }
+
+  Future<Task?> getTaskById(int taskId) async {
+    try {
+      return await _taskService.getTaskById(taskId);
+    } catch (e) {
+      print('Error fetching task: $e');
+      return null;
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var timer in _completionTimers.values) {
+      timer.cancel();
+    }
+    super.dispose();
   }
 }

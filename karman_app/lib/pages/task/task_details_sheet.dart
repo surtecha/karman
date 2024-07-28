@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:karman_app/components/date_time/date_button.dart';
-import 'package:karman_app/components/date_time/reminders.dart';
-import 'package:karman_app/components/task/task_note.dart';
+import 'package:karman_app/components/task/taskDetailsWidgets/task_name_input.dart';
+import 'package:karman_app/components/task/taskDetailsWidgets/task_options_section.dart';
+import 'package:karman_app/components/task/taskDetailsWidgets/priority_selector.dart';
+import 'package:karman_app/components/task/taskDetailsWidgets/task_note.dart';
 import 'package:karman_app/controllers/task/task_controller.dart';
 import 'package:karman_app/models/task/task.dart';
 import 'package:karman_app/services/notification_service.dart';
@@ -13,10 +13,10 @@ class TaskDetailsSheet extends StatefulWidget {
   final bool isNewTask;
 
   const TaskDetailsSheet({
-    Key? key,
+    super.key,
     this.task,
     required this.isNewTask,
-  }) : super(key: key);
+  });
 
   @override
   _TaskDetailsSheetState createState() => _TaskDetailsSheetState();
@@ -58,21 +58,21 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
 
   final FocusNode _nameFocusNode = FocusNode();
 
-  bool _isDateInPast(DateTime date) {
-    final now = DateTime.now();
-    return date.isBefore(now);
-  }
-
-  void _saveChanges() {
+  void _saveChanges() async {
     if (_nameController.text.trim().isEmpty) {
-      _showQuirkyDialog('A Task Without a Name?',
-          'Your task is feeling a bit shy and nameless. How about giving it a snazzy title to boost its confidence?');
+      _showQuirkyDialog(
+          'A Task Without a Name?', 'Please give your task a name!');
       return;
     }
 
-    if (_isReminderEnabled && _reminder != null && _isDateInPast(_reminder!)) {
-      _showQuirkyDialog('Time Travel Not Invented Yet!',
-          'Unless you have a time machine, we can\'t remind you in the past.');
+    final now = DateTime.now();
+    bool isPastDueDate =
+        _isDateEnabled && _dueDate != null && _dueDate!.isBefore(now);
+    bool isPastReminder =
+        _isReminderEnabled && _reminder != null && _reminder!.isBefore(now);
+
+    if (isPastDueDate || isPastReminder) {
+      _showPastDateReminderDialog(isPastDueDate, isPastReminder);
       return;
     }
 
@@ -86,25 +86,33 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
       isCompleted: widget.task?.isCompleted ?? false,
     );
 
-    if (widget.isNewTask) {
-      context.read<TaskController>().addTask(updatedTask);
-    } else {
-      context.read<TaskController>().updateTask(updatedTask);
-    }
+    Task savedTask;
+    try {
+      if (widget.isNewTask) {
+        savedTask = await context.read<TaskController>().addTask(updatedTask);
+      } else {
+        savedTask =
+            await context.read<TaskController>().updateTask(updatedTask);
+      }
 
-    if (updatedTask.reminder != null) {
-      NotificationService.scheduleNotification(
-        id: updatedTask.taskId!,
-        title: 'Task Reminder',
-        body: updatedTask.name,
-        scheduledDate: updatedTask.reminder!,
-        payload: 'task_${updatedTask.taskId}',
-      );
-    } else if (updatedTask.taskId != null) {
-      NotificationService.cancelNotification(updatedTask.taskId!);
-    }
+      if (savedTask.reminder != null && savedTask.taskId != null) {
+        await NotificationService.scheduleNotification(
+          id: savedTask.taskId!,
+          title: 'Task Reminder',
+          body: savedTask.name,
+          scheduledDate: savedTask.reminder!,
+          payload: 'task_${savedTask.taskId}',
+        );
+      } else if (savedTask.taskId != null) {
+        await NotificationService.cancelNotification(savedTask.taskId!);
+      }
 
-    Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      print('Error saving task: $e');
+      _showQuirkyDialog('Oops! Something Went Wrong',
+          'The task gremlins are acting up. Please try again later.');
+    }
   }
 
   void _showQuirkyDialog(String title, String content) {
@@ -125,195 +133,109 @@ class _TaskDetailsSheetState extends State<TaskDetailsSheet> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).pop(),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        minChildSize: 0.2,
-        maxChildSize: 0.9,
-        builder: (BuildContext context, ScrollController scrollController) {
-          return GestureDetector(
-            onTap: () {},
-            child: Container(
-              decoration: BoxDecoration(
-                color: CupertinoColors.darkBackgroundGray,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(20),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: CupertinoTextField(
-                            controller: _nameController,
-                            focusNode: _nameFocusNode,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                            ),
-                            placeholder: 'Task Name',
-                            placeholderStyle: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 24,
-                            ),
-                          ),
-                        ),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: _saveChanges,
-                          child: Icon(
-                            CupertinoIcons.check_mark_circled,
-                            color: Colors.white,
-                            size: 30,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            TaskNote(
-                              controller: _noteController,
-                              hintText: 'Note...',
-                            ),
-                            SizedBox(height: 30),
-                            _buildToggleRow(
-                              icon: CupertinoIcons.calendar,
-                              title: 'Date',
-                              isEnabled: _isDateEnabled,
-                              onToggle: (value) {
-                                setState(() {
-                                  _isDateEnabled = value;
-                                  if (!value) _dueDate = null;
-                                });
-                              },
-                              child: DateButton(
-                                selectedDate: _dueDate,
-                                onDateSelected: (date) {
-                                  setState(() {
-                                    _dueDate = date;
-                                  });
-                                },
-                                isEnabled: _isDateEnabled,
-                              ),
-                            ),
-                            SizedBox(height: 20),
-                            _buildToggleRow(
-                              icon: CupertinoIcons.bell,
-                              title: 'Reminder',
-                              isEnabled: _isReminderEnabled,
-                              onToggle: (value) {
-                                setState(() {
-                                  _isReminderEnabled = value;
-                                  if (!value) _reminder = null;
-                                });
-                              },
-                              child: ReminderButton(
-                                selectedDateTime: _reminder,
-                                onReminderSet: (DateTime newDateTime) {
-                                  setState(() {
-                                    _reminder = newDateTime;
-                                  });
-                                },
-                                isEnabled: _isReminderEnabled,
-                              ),
-                            ),
-                            SizedBox(height: 30),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                _buildPriorityOption(1, Colors.green),
-                                _buildPriorityOption(2, Colors.yellow),
-                                _buildPriorityOption(3, Colors.red),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+  void _showPastDateReminderDialog(bool isPastDueDate, bool isPastReminder) {
+    String title = 'Time Travel Alert!';
+    String content = '';
+
+    if (isPastDueDate && isPastReminder) {
+      content =
+          'The due date and reminder are set in the past. Please update them or turn them off to save the changes.';
+    } else if (isPastDueDate) {
+      content =
+          'The due date is set in the past. Please update it or turn it off to save the changes.';
+    } else if (isPastReminder) {
+      content =
+          'The reminder is set in the past. Please update it or turn it off to save the changes.';
+    }
+
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title, style: TextStyle(fontSize: 18)),
+        content: Text(content),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            child: Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildToggleRow({
-    required IconData icon,
-    required String title,
-    required bool isEnabled,
-    required Function(bool) onToggle,
-    required Widget child,
-  }) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.white),
-        SizedBox(width: 10),
-        Expanded(child: child),
-        CupertinoSwitch(
-          value: isEnabled,
-          onChanged: onToggle,
-          activeColor: Colors.white,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPriorityOption(int priority, Color color) {
-    bool isSelected = _priority == priority;
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _priority = priority;
-        });
-      },
-      child: Column(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isSelected ? color : Colors.transparent,
-              border: Border.all(
-                color: isSelected ? color : Colors.white,
-                width: 2,
-              ),
-            ),
-            child: Center(
-              child: Icon(
-                CupertinoIcons.flag_fill,
-                color: isSelected ? Colors.black : color,
-                size: 20,
-              ),
-            ),
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+            left: 20,
+            right: 20,
+            top: 20,
           ),
-          SizedBox(height: 5),
-          Text(
-            priority == 1 ? 'Low' : (priority == 2 ? 'Medium' : 'High'),
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
+          decoration: BoxDecoration(
+            color: CupertinoColors.darkBackgroundGray,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TaskNameInput(
+                controller: _nameController,
+                focusNode: _nameFocusNode,
+                onSave: _saveChanges,
+              ),
+              SizedBox(height: 20),
+              TaskNote(
+                controller: _noteController,
+                hintText: 'Note...',
+              ),
+              SizedBox(height: 30),
+              TaskOptionsSection(
+                isDateEnabled: _isDateEnabled,
+                isReminderEnabled: _isReminderEnabled,
+                dueDate: _dueDate,
+                reminder: _reminder,
+                onDateToggle: (value) {
+                  setState(() {
+                    _isDateEnabled = value;
+                    if (!value) _dueDate = null;
+                  });
+                },
+                onReminderToggle: (value) {
+                  setState(() {
+                    _isReminderEnabled = value;
+                    if (!value) _reminder = null;
+                  });
+                },
+                onDateSelected: (date) {
+                  setState(() {
+                    _dueDate = date;
+                  });
+                },
+                onReminderSet: (DateTime newDateTime) {
+                  setState(() {
+                    _reminder = newDateTime;
+                  });
+                },
+              ),
+              SizedBox(height: 30),
+              PrioritySelector(
+                selectedPriority: _priority,
+                onPriorityChanged: (priority) {
+                  setState(() {
+                    _priority = priority;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

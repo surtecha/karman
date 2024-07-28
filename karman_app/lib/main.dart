@@ -9,11 +9,12 @@ import 'package:karman_app/database/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService.init();
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  await NotificationService.init(navigatorKey);
   tz.initializeTimeZones();
 
   final databaseService = DatabaseService();
-  await databaseService.database; // This initializes the database
+  await databaseService.database; 
 
   // Initialize controllers
   final taskController = TaskController();
@@ -28,21 +29,24 @@ void main() async {
       ChangeNotifierProvider(create: (context) => taskController),
       ChangeNotifierProvider(create: (context) => habitController),
     ],
-    child: KarmanApp(),
+    child: KarmanApp(navigatorKey: navigatorKey),
   ));
 }
 
 class KarmanApp extends StatelessWidget {
-  const KarmanApp({super.key});
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  const KarmanApp({super.key, required this.navigatorKey});
 
   @override
   Widget build(BuildContext context) {
     return CupertinoApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: CupertinoThemeData(
         brightness: Brightness.dark,
       ),
-      home: AppShell(),
+      home: AppShell(key: AppShell.globalKey),
     );
   }
 }
