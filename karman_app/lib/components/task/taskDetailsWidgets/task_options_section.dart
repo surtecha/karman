@@ -39,7 +39,7 @@ class TaskOptionsSection extends StatelessWidget {
         SizedBox(height: 20),
         TaskReminder(
           isEnabled: isReminderEnabled,
-          dateTime: reminder,
+          dateTime: reminder ?? dueDate,
           onToggle: onReminderToggle,
           onDateTimeSelected: onReminderSet,
           title: 'Reminder',

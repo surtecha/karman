@@ -29,6 +29,7 @@ class TaskReminderState extends State<TaskReminder>
   late AnimationController _animationController;
   late Animation<double> _animation;
   DateTime? _selectedDateTime;
+  bool _wasDateTimeSelected = false;
 
   @override
   void initState() {
@@ -50,6 +51,14 @@ class TaskReminderState extends State<TaskReminder>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(TaskReminder oldWidget) {
+    if (oldWidget.dateTime != widget.dateTime && widget.dateTime != null) {
+      if (!_wasDateTimeSelected) _selectedDateTime = widget.dateTime;
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
   void _togglePicker(bool value) {
     widget.onToggle(value);
     if (value) {
@@ -69,6 +78,7 @@ class TaskReminderState extends State<TaskReminder>
   void _handleDateTimeSelection(DateTime dateTime) {
     setState(() {
       _selectedDateTime = dateTime;
+      _wasDateTimeSelected = true;
     });
     widget.onDateTimeSelected(dateTime);
   }
