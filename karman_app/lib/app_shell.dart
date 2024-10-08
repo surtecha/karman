@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:karman_app/pages/more/more_page.dart';
-import 'package:karman_app/pages/habit/habits_page.dart';
-import 'package:karman_app/pages/task/tasks_page.dart';
-import 'package:karman_app/pages/focus/focus_page.dart';
+import 'package:karman_app/features/foucs/ui/pages/focus_page.dart';
+import 'package:karman_app/features/habits/ui/pages/habits_page.dart';
+import 'package:karman_app/features/more/ui/pages/more_page.dart';
+import 'package:karman_app/features/tasks/ui/pages/tasks_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppShell extends StatefulWidget {

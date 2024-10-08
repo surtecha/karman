@@ -49,49 +49,49 @@ flutter:
   uses-material-design: true
 
   assets:
-    - lib/assets/images/icon/iOS/icon.png
-    - lib/assets/lottie/tasks.json
-    - lib/assets/lottie/habits.json
-    - lib/assets/lottie/focus.json
-    - lib/assets/lottie/github.json
-    - lib/assets/lottie/discord.json
-    - lib/assets/lottie/support.json
-    - lib/assets/images/badges/focus_badge.png
-    - lib/assets/images/badges/habit_badge.png
-    - lib/assets/tutorials/tasks/create_task.png
-    - lib/assets/tutorials/tasks/clear_completed.png
-    - lib/assets/tutorials/tasks/task_details.png
-    - lib/assets/tutorials/tasks/complete_task.png
-    - lib/assets/tutorials/tasks/clear_completed.png
-    - lib/assets/tutorials/tasks/delete_task.png
-    - lib/assets/tutorials/habits/create_habit.png
-    - lib/assets/tutorials/habits/complete_habit.png
-    - lib/assets/tutorials/habits/swipe_complete.png
-    - lib/assets/tutorials/habits/log_routine.png
-    - lib/assets/tutorials/habits/view_streak.png
-    - lib/assets/tutorials/habits/habit_details.png
-    - lib/assets/tutorials/habits/delete_habit.png
-    - lib/assets/tutorials/focus/set_time.png
-    - lib/assets/tutorials/focus/start_timer.png
-    - lib/assets/tutorials/focus/relaxing_sounds.png
-    - lib/assets/tutorials/pomodoro/set_durations.png
-    - lib/assets/tutorials/pomodoro/start_session.png
-    - lib/assets/tutorials/pomodoro/track_session.png
-    - lib/assets/images/pomodoro/pomo_active.png
-    - lib/assets/images/pomodoro/pomo_inactive.png
-    - lib/assets/audio/rain.mp3
-    - lib/assets/audio/forest.mp3
-    - lib/assets/audio/ocean.mp3
-    - lib/assets/audio/night.mp3
-    - lib/assets/audio/airplane.mp3
+    - assets/images/icon/iOS/icon.png
+    - assets/lottie/tasks.json
+    - assets/lottie/habits.json
+    - assets/lottie/focus.json
+    - assets/lottie/github.json
+    - assets/lottie/discord.json
+    - assets/lottie/support.json
+    - assets/images/badges/focus_badge.png
+    - assets/images/badges/habit_badge.png
+    - assets/tutorials/tasks/create_task.png
+    - assets/tutorials/tasks/clear_completed.png
+    - assets/tutorials/tasks/task_details.png
+    - assets/tutorials/tasks/complete_task.png
+    - assets/tutorials/tasks/clear_completed.png
+    - assets/tutorials/tasks/delete_task.png
+    - assets/tutorials/habits/create_habit.png
+    - assets/tutorials/habits/complete_habit.png
+    - assets/tutorials/habits/swipe_complete.png
+    - assets/tutorials/habits/log_routine.png
+    - assets/tutorials/habits/view_streak.png
+    - assets/tutorials/habits/habit_details.png
+    - assets/tutorials/habits/delete_habit.png
+    - assets/tutorials/focus/set_time.png
+    - assets/tutorials/focus/start_timer.png
+    - assets/tutorials/focus/relaxing_sounds.png
+    - assets/tutorials/pomodoro/set_durations.png
+    - assets/tutorials/pomodoro/start_session.png
+    - assets/tutorials/pomodoro/track_session.png
+    - assets/images/pomodoro/pomo_active.png
+    - assets/images/pomodoro/pomo_inactive.png
+    - assets/audio/rain.mp3
+    - assets/audio/forest.mp3
+    - assets/audio/ocean.mp3
+    - assets/audio/night.mp3
+    - assets/audio/airplane.mp3
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: "AppIcon"
-  image_path: "lib/assets/images/icon/iOS/icon.png"
+  image_path: "assets/images/icon/iOS/icon.png"
   min_sdk_android: 21
-  adaptive_icon_foreground: "lib/assets/images/icon/Android/foreground.png"
-  adaptive_icon_background: "lib/assets/images/icon/Android/background.png"
+  adaptive_icon_foreground: "assets/images/icon/Android/foreground.png"
+  adaptive_icon_background: "assets/images/icon/Android/background.png"
   remove_alpha_ios: true
 
 flutter_native_splash:
@@ -118,7 +118,7 @@ flutter_native_splash:
 
   # The image parameter allows you to specify an image used in the splash screen.  It must be a
   # png file and should be sized for 4x pixel density.
-  image: lib/assets/images/icon/iOS/icon.png
+  image: assets/images/icon/iOS/icon.png
 
   # The branding property allows you to specify an image used as branding in the splash screen.
   # It must be a png file. It is supported for Android, iOS and the Web.  For Android 12,
@@ -153,7 +153,7 @@ flutter_native_splash:
     # 640 pixels in diameter.
     # App icon without an icon background: This should be 1152×1152 pixels, and fit within a circle
     # 768 pixels in diameter.
-    image: lib/assets/images/icon/Android/foreground.png
+    image: assets/images/icon/Android/foreground.png
 
     # Splash screen background color.
     color: "#000000"

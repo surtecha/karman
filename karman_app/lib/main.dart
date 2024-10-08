@@ -1,16 +1,15 @@
 import 'package:flutter/cupertino.dart';
-import 'package:karman_app/app_shell.dart';
-import 'package:karman_app/controllers/habit_controller.dart';
-import 'package:karman_app/controllers/task_controller.dart';
-import 'package:karman_app/pages/welcome/welcome_screen.dart';
-import 'package:karman_app/pages/welcome/welcome_service.dart';
-import 'package:karman_app/services/notifications/notification_service.dart';
-import 'package:karman_app/services/notifications/pomodoro_notification_service.dart';
-import 'package:provider/provider.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:karman_app/database/database_service.dart';
 import 'package:karman_app/app_state.dart';
+import 'package:karman_app/core/services/database/database_service.dart';
+import 'package:karman_app/core/services/notifications/notification_service.dart';
+import 'package:karman_app/core/services/notifications/pomodoro_notification_service.dart';
+import 'package:karman_app/features/habits/logic/habit_controller.dart';
+import 'package:karman_app/features/tasks/logic/task_controller.dart';
+import 'package:karman_app/features/welcome_tutorial/ui/pages/welcome/welcome_service.dart';
+import 'package:karman_app/karman_app.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,31 +44,4 @@ void main() async {
       initialTabIndex: lastUsedTabIndex,
     ),
   ));
-}
-
-class KarmanApp extends StatelessWidget {
-  final GlobalKey<NavigatorState> navigatorKey;
-  final bool showWelcome;
-  final int initialTabIndex;
-
-  const KarmanApp({
-    super.key,
-    required this.navigatorKey,
-    required this.showWelcome,
-    required this.initialTabIndex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CupertinoApp(
-      navigatorKey: navigatorKey,
-      debugShowCheckedModeBanner: false,
-      theme: const CupertinoThemeData(
-        brightness: Brightness.dark,
-      ),
-      home: showWelcome
-          ? const WelcomeScreen()
-          : AppShell(key: AppShell.globalKey, initialTabIndex: initialTabIndex),
-    );
-  }
 }
