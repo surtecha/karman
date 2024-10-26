@@ -169,13 +169,13 @@ class PomodoroPageState extends State<PomodoroPage>
                       children: [
                         Expanded(
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               PomodoroTimerDisplay(controller: controller),
                               if (controller.isRunning &&
                                   controller.isFocusSession)
                                 Padding(
-                                  padding: EdgeInsets.all(20),
+                                  padding: EdgeInsets.symmetric(horizontal: 20),
                                   child: Text(
                                     controller.currentQuote,
                                     textAlign: TextAlign.center,
@@ -186,14 +186,13 @@ class PomodoroPageState extends State<PomodoroPage>
                                     ),
                                   ),
                                 ),
-                              SizedBox(height: 20),
                               PomodoroSessionIndicator(controller: controller),
-                              SizedBox(height: 20),
                               PomodoroSessionTypeIndicator(
-                                  isFocusSession: controller.isFocusSession,
-                                  isRunning: controller.isRunning),
-                              SizedBox(height: 20),
+                                isFocusSession: controller.isFocusSession,
+                                isRunning: controller.isRunning,
+                              ),
                               CupertinoButton(
+                                padding: EdgeInsets.zero,
                                 child: Icon(
                                   controller.isRunning
                                       ? CupertinoIcons.stop_circle
@@ -210,10 +209,9 @@ class PomodoroPageState extends State<PomodoroPage>
                             ],
                           ),
                         ),
-                        SizedBox(height: 20),
                         AnimatedContainer(
                           duration: Duration(milliseconds: 300),
-                          height: controller.isRunning ? 0 : 300,
+                          height: controller.isRunning ? 0 : 160,
                           child: SingleChildScrollView(
                             child:
                                 PomodoroSettingsPicker(controller: controller),
