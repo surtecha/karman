@@ -1,11 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:karman_app/components/habit/habit_logs_button.dart';
+import 'package:karman_app/components/habit/habit_name_field.dart';
 import 'package:karman_app/components/habit/habit_schedule_selector.dart';
+import 'package:karman_app/components/habit/habit_streak_info.dart';
 import 'package:karman_app/components/reminders/habit_reminder.dart';
 import 'package:karman_app/controllers/habit_controller.dart';
 import 'package:karman_app/models/habits/habit.dart';
 import 'package:karman_app/models/habits/habit_schedule.dart';
-import 'package:karman_app/pages/habit/habit_logs_page.dart';
 import 'package:karman_app/services/notifications/notification_service.dart';
 import 'package:provider/provider.dart';
 
@@ -147,7 +149,13 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHabitNameField(),
+              HabitNameField(
+                controller: _nameController,
+                focusNode: _nameFocusNode,
+                isHabitNameEmpty: _isHabitNameEmpty,
+                hasChanges: _hasChanges,
+                onSave: _saveChanges,
+              ),
               SizedBox(height: 30),
               HabitReminder(
                 isEnabled: _isReminderEnabled,
@@ -178,91 +186,14 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
               ),
               if (!widget.isNewHabit) ...[
                 SizedBox(height: 25),
-                _buildBestStreakInfo(),
+                HabitStreakInfo(bestStreak: widget.habit.bestStreak),
                 SizedBox(height: 30),
-                _buildViewLogsButton(),
+                HabitLogsButton(habit: widget.habit),
                 SizedBox(height: 40),
               ],
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildHabitNameField() {
-    return Row(
-      children: [
-        Expanded(
-          child: CupertinoTextField(
-            controller: _nameController,
-            focusNode: _nameFocusNode,
-            style: TextStyle(
-              color: _isHabitNameEmpty
-                  ? CupertinoColors.systemGrey
-                  : CupertinoColors.white,
-              fontSize: 20,
-            ),
-            placeholder: 'Habit Name',
-            placeholderStyle: TextStyle(
-              color: CupertinoColors.systemGrey,
-              fontSize: 20,
-            ),
-            textCapitalization: TextCapitalization.sentences,
-          ),
-        ),
-        SizedBox(width: 20),
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _hasChanges && !_isHabitNameEmpty ? _saveChanges : null,
-          child: Text(
-            'Save',
-            style: TextStyle(
-              color: _hasChanges && !_isHabitNameEmpty
-                  ? CupertinoColors.white
-                  : CupertinoColors.systemGrey,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBestStreakInfo() {
-    return Row(
-      children: [
-        Icon(CupertinoIcons.flame, color: CupertinoColors.white),
-        SizedBox(width: 10),
-        Text(
-          'Best: ${widget.habit.bestStreak}',
-          style: TextStyle(color: CupertinoColors.white, fontSize: 18),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildViewLogsButton() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          CupertinoPageRoute(
-            builder: (context) => HabitLogsPage(habit: widget.habit),
-          ),
-        );
-      },
-      child: const Row(
-        children: [
-          Icon(CupertinoIcons.doc_text, color: CupertinoColors.white),
-          SizedBox(width: 10),
-          Text(
-            'View Logs',
-            style: TextStyle(color: CupertinoColors.white, fontSize: 18),
-          ),
-          Spacer(),
-          Icon(CupertinoIcons.chevron_right, color: CupertinoColors.white),
-        ],
       ),
     );
   }
