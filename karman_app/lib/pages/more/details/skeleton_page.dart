@@ -20,62 +20,68 @@ class SkeletonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final animationHeight = screenSize.height * 0.25; // 25% of screen height
+
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
       navigationBar: CupertinoNavigationBar(
         backgroundColor: CupertinoColors.black,
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
-          child: Icon(CupertinoIcons.back, color: CupertinoColors.white),
+          child: const Icon(CupertinoIcons.back, color: CupertinoColors.white),
         ),
         middle: Text(title, style: _textStyle.copyWith(fontSize: 18)),
       ),
       child: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(height: 16),
-            Lottie.asset(animationAsset, height: 200),
-            SizedBox(height: 24),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  children: paragraphs
-                      .map((paragraph) => Padding(
-                            padding: EdgeInsets.only(bottom: 16),
-                            child: Text(
-                              paragraph,
-                              style: _textStyle,
-                            ),
-                          ))
-                      .toList(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                Lottie.asset(
+                  animationAsset,
+                  height: animationHeight,
                 ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: CupertinoButton(
-                color: CupertinoColors.white,
-                onPressed: () => _launchURL(linkUrl),
-                child: Text(
-                  linkText,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.black,
+                const SizedBox(height: 24),
+                ...paragraphs.map((paragraph) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        paragraph,
+                        style: _textStyle,
+                        textAlign: TextAlign.justify,
+                      ),
+                    )),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: CupertinoButton(
+                    color: CupertinoColors.white,
+                    onPressed: () => _launchURL(linkUrl),
+                    child: Text(
+                      linkText,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: CupertinoColors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 16),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  static final TextStyle _textStyle = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
+  static const TextStyle _textStyle = TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
     color: CupertinoColors.white,
   );
 
