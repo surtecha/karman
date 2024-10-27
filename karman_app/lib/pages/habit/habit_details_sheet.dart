@@ -136,7 +136,7 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
       child: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 40,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
             left: 20,
             right: 20,
             top: 20,
@@ -185,11 +185,11 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
                 },
               ),
               if (!widget.isNewHabit) ...[
-                SizedBox(height: 25),
+                SizedBox(height: 15),
                 HabitStreakInfo(bestStreak: widget.habit.bestStreak),
-                SizedBox(height: 30),
+                SizedBox(height: 15),
                 HabitLogsButton(habit: widget.habit),
-                SizedBox(height: 40),
+                SizedBox(height: 15),
               ],
             ],
           ),
