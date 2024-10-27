@@ -18,62 +18,64 @@ class HabitScheduleSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Repeat on:',
-          style: TextStyle(
-            color: CupertinoColors.white,
-            fontSize: 16,
-          ),
+        const Row(
+          children: [
+            Icon(
+              CupertinoIcons.repeat,
+              color: CupertinoColors.white,
+              size: 20,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Repeat on',
+              style: TextStyle(
+                color: CupertinoColors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _DayButton(
-                day: 'S',
-                isSelected: selectedDays.contains(7),
-                onTap: () => _toggleDay(7),
-              ),
-              SizedBox(width: 8),
-              _DayButton(
-                day: 'M',
-                isSelected: selectedDays.contains(1),
-                onTap: () => _toggleDay(1),
-              ),
-              SizedBox(width: 8),
-              _DayButton(
-                day: 'T',
-                isSelected: selectedDays.contains(2),
-                onTap: () => _toggleDay(2),
-              ),
-              SizedBox(width: 8),
-              _DayButton(
-                day: 'W',
-                isSelected: selectedDays.contains(3),
-                onTap: () => _toggleDay(3),
-              ),
-              SizedBox(width: 8),
-              _DayButton(
-                day: 'T',
-                isSelected: selectedDays.contains(4),
-                onTap: () => _toggleDay(4),
-              ),
-              SizedBox(width: 8),
-              _DayButton(
-                day: 'F',
-                isSelected: selectedDays.contains(5),
-                onTap: () => _toggleDay(5),
-              ),
-              SizedBox(width: 8),
-              _DayButton(
-                day: 'S',
-                isSelected: selectedDays.contains(6),
-                onTap: () => _toggleDay(6),
-              ),
-            ],
-          ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _DayButton(
+              day: 'S',
+              isSelected: selectedDays.contains(7),
+              onTap: () => _toggleDay(7),
+            ),
+            _DayButton(
+              day: 'M',
+              isSelected: selectedDays.contains(1),
+              onTap: () => _toggleDay(1),
+            ),
+            _DayButton(
+              day: 'T',
+              isSelected: selectedDays.contains(2),
+              onTap: () => _toggleDay(2),
+            ),
+            _DayButton(
+              day: 'W',
+              isSelected: selectedDays.contains(3),
+              onTap: () => _toggleDay(3),
+            ),
+            _DayButton(
+              day: 'T',
+              isSelected: selectedDays.contains(4),
+              onTap: () => _toggleDay(4),
+            ),
+            _DayButton(
+              day: 'F',
+              isSelected: selectedDays.contains(5),
+              onTap: () => _toggleDay(5),
+            ),
+            _DayButton(
+              day: 'S',
+              isSelected: selectedDays.contains(6),
+              onTap: () => _toggleDay(6),
+            ),
+          ],
         ),
       ],
     );
@@ -84,7 +86,6 @@ class HabitScheduleSelector extends StatelessWidget {
     List<int> newDays;
 
     if (currentDays.contains(day)) {
-      // Don't allow removing the last day
       if (currentDays.length > 1) {
         newDays = currentDays.where((d) => d != day).toList()..sort();
       } else {

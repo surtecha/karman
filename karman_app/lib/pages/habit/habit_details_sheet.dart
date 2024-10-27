@@ -156,7 +156,17 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
                 hasChanges: _hasChanges,
                 onSave: _saveChanges,
               ),
-              SizedBox(height: 30),
+              SizedBox(height: 32),
+              HabitScheduleSelector(
+                schedule: _schedule,
+                onScheduleChanged: (newSchedule) {
+                  setState(() {
+                    _schedule = newSchedule;
+                    _updateState();
+                  });
+                },
+              ),
+              SizedBox(height: 32),
               HabitReminder(
                 isEnabled: _isReminderEnabled,
                 time: _reminderTime,
@@ -174,20 +184,10 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
                   });
                 },
               ),
-              SizedBox(height: 30),
-              HabitScheduleSelector(
-                schedule: _schedule,
-                onScheduleChanged: (newSchedule) {
-                  setState(() {
-                    _schedule = newSchedule;
-                    _updateState();
-                  });
-                },
-              ),
               if (!widget.isNewHabit) ...[
-                SizedBox(height: 15),
+                SizedBox(height: 32),
                 HabitStreakInfo(bestStreak: widget.habit.bestStreak),
-                SizedBox(height: 15),
+                SizedBox(height: 32),
                 HabitLogsButton(habit: widget.habit),
                 SizedBox(height: 15),
               ],
