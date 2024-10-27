@@ -84,7 +84,7 @@ class HabitReminderState extends State<HabitReminder>
   Widget _buildToggleRow() {
     return Row(
       children: [
-        Icon(CupertinoIcons.bell, color: CupertinoColors.white),
+        Icon(CupertinoIcons.bell, color: widget.isEnabled ? CupertinoColors.white : CupertinoColors.systemGrey),
         SizedBox(width: 10),
         Expanded(
           child: GestureDetector(
