@@ -16,10 +16,10 @@ class HabitReminder extends StatefulWidget {
   });
 
   @override
-  _HabitReminderState createState() => _HabitReminderState();
+  HabitReminderState createState() => HabitReminderState();
 }
 
-class _HabitReminderState extends State<HabitReminder>
+class HabitReminderState extends State<HabitReminder>
     with SingleTickerProviderStateMixin {
   bool isPickerVisible = false;
   late AnimationController _animationController;
@@ -94,9 +94,7 @@ class _HabitReminderState extends State<HabitReminder>
               }
             },
             child: Text(
-              widget.time == null
-                  ? 'Set daily reminder'
-                  : _formatTime(widget.time!),
+              widget.time == null ? 'Set reminder' : _formatTime(widget.time!),
               style: TextStyle(
                 color: widget.isEnabled
                     ? CupertinoColors.white

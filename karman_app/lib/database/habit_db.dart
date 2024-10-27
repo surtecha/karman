@@ -14,7 +14,8 @@ class HabitDatabase {
         bestStreak INTEGER NOT NULL,
         isCompletedToday INTEGER NOT NULL,
         startDate TEXT NOT NULL,
-        lastCompletionDate TEXT
+        lastCompletionDate TEXT,
+        selectedDays TEXT NOT NULL DEFAULT '1,2,3,4,5,6,7'
       )
     ''');
 

@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:karman_app/components/habit/habit_schedule_selector.dart';
 import 'package:karman_app/components/reminders/habit_reminder.dart';
 import 'package:karman_app/controllers/habit_controller.dart';
 import 'package:karman_app/models/habits/habit.dart';
+import 'package:karman_app/models/habits/habit_schedule.dart';
 import 'package:karman_app/pages/habit/habit_logs_page.dart';
 import 'package:karman_app/services/notifications/notification_service.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +28,7 @@ class HabitDetailsSheet extends StatefulWidget {
 class HabitDetailsSheetState extends State<HabitDetailsSheet> {
   late TextEditingController _nameController;
   late FocusNode _nameFocusNode;
+  late HabitSchedule _schedule;
   TimeOfDay? _reminderTime;
   bool _isReminderEnabled = false;
   bool _isHabitNameEmpty = true;
@@ -36,6 +39,7 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
     super.initState();
     _nameController = TextEditingController(text: widget.habit.habitName);
     _nameFocusNode = FocusNode();
+    _schedule = widget.habit.schedule;
     _isHabitNameEmpty = _nameController.text.isEmpty;
     _nameController.addListener(_updateState);
     if (widget.habit.reminderTime != null) {
@@ -68,7 +72,8 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
               widget.habit.reminderTime != null &&
               (_reminderTime!.hour != widget.habit.reminderTime!.inHours ||
                   _reminderTime!.minute !=
-                      widget.habit.reminderTime!.inMinutes % 60));
+                      widget.habit.reminderTime!.inMinutes % 60)) ||
+          _schedule != widget.habit.schedule;
     });
   }
 
@@ -80,6 +85,7 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
       reminderTime: _isReminderEnabled && _reminderTime != null
           ? Duration(hours: _reminderTime!.hour, minutes: _reminderTime!.minute)
           : null,
+      schedule: _schedule,
     );
 
     final habitController = context.read<HabitController>();
@@ -111,16 +117,13 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
       _reminderTime!.minute,
     );
 
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate.add(Duration(days: 1));
-    }
-
     NotificationService.scheduleNotification(
       id: habit.habitId!,
       title: 'Let\'s do it!',
       body: habit.habitName,
       scheduledDate: scheduledDate,
       payload: 'habit_${habit.habitId}',
+      selectedDays: habit.schedule.selectedDaysList,
     );
   }
 
@@ -159,6 +162,16 @@ class HabitDetailsSheetState extends State<HabitDetailsSheet> {
                 onTimeSelected: (TimeOfDay time) {
                   setState(() {
                     _reminderTime = time;
+                    _updateState();
+                  });
+                },
+              ),
+              SizedBox(height: 30),
+              HabitScheduleSelector(
+                schedule: _schedule,
+                onScheduleChanged: (newSchedule) {
+                  setState(() {
+                    _schedule = newSchedule;
                     _updateState();
                   });
                 },

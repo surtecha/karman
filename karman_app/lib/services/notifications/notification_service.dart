@@ -100,32 +100,66 @@ class NotificationService {
     required String body,
     required DateTime scheduledDate,
     String? payload,
+    List<int>? selectedDays,
   }) async {
-    tz.TZDateTime notificationTime = _nextInstanceOfTime(scheduledDate);
+    if (selectedDays != null) {
+      for (int weekday in selectedDays) {
+        tz.TZDateTime notificationTime = _nextInstanceOfTimeOnWeekday(
+          scheduledDate,
+          weekday,
+        );
 
-    await _notifications.zonedSchedule(
-      id,
-      title,
-      body,
-      notificationTime,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'scheduled_notification_channel',
-          'Scheduled Notifications',
-          importance: Importance.max,
-          priority: Priority.high,
-          icon: '@drawable/notification_icon',
-          color: Color.fromARGB(255, 255, 255, 255),
-          largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
-          styleInformation: BigTextStyleInformation(''),
+        await _notifications.zonedSchedule(
+          id + weekday,
+          title,
+          body,
+          notificationTime,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'scheduled_notification_channel',
+              'Scheduled Notifications',
+              importance: Importance.max,
+              priority: Priority.high,
+              icon: '@drawable/notification_icon',
+              color: Color.fromARGB(255, 255, 255, 255),
+              largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
+              styleInformation: BigTextStyleInformation(''),
+            ),
+            iOS: DarwinNotificationDetails(),
+          ),
+          androidAllowWhileIdle: true,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: payload,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+        );
+      }
+    } else {
+      tz.TZDateTime notificationTime = _nextInstanceOfTime(scheduledDate);
+      await _notifications.zonedSchedule(
+        id,
+        title,
+        body,
+        notificationTime,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'scheduled_notification_channel',
+            'Scheduled Notifications',
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@drawable/notification_icon',
+            color: Color.fromARGB(255, 255, 255, 255),
+            largeIcon: DrawableResourceAndroidBitmap('@mipmap/launcher_icon'),
+            styleInformation: BigTextStyleInformation(''),
+          ),
+          iOS: DarwinNotificationDetails(),
         ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      payload: payload,
-    );
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: payload,
+      );
+    }
   }
 
   static tz.TZDateTime _nextInstanceOfTime(DateTime scheduledDate) {
@@ -151,7 +185,35 @@ class NotificationService {
     return scheduledTZDateTime;
   }
 
+  static tz.TZDateTime _nextInstanceOfTimeOnWeekday(
+    DateTime scheduledDate,
+    int targetWeekday,
+  ) {
+    tz.TZDateTime scheduledTZDateTime = tz.TZDateTime(
+      tz.local,
+      scheduledDate.year,
+      scheduledDate.month,
+      scheduledDate.day,
+      scheduledDate.hour,
+      scheduledDate.minute,
+    );
+
+    while (scheduledTZDateTime.weekday != targetWeekday) {
+      scheduledTZDateTime = scheduledTZDateTime.add(const Duration(days: 1));
+    }
+
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    if (scheduledTZDateTime.isBefore(now)) {
+      scheduledTZDateTime = scheduledTZDateTime.add(const Duration(days: 7));
+    }
+
+    return scheduledTZDateTime;
+  }
+
   static Future<void> cancelNotification(int id) async {
+    for (int weekday = 1; weekday <= 7; weekday++) {
+      await _notifications.cancel(id + weekday);
+    }
     await _notifications.cancel(id);
   }
 

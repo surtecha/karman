@@ -9,7 +9,7 @@ class DatabaseService {
   static Database? _database;
 
   static const _databaseName = "karman_app.db";
-  static const _databaseVersion = 2;
+  static const _databaseVersion = 3; // Updated version number
 
   factory DatabaseService() => _instance;
 
@@ -60,6 +60,54 @@ class DatabaseService {
             AND (t2.task_id < ${TaskDatabase().tableName}.task_id OR (t2.task_id = ${TaskDatabase().tableName}.task_id AND t2.name <= ${TaskDatabase().tableName}.name))
         )
       ''');
+    }
+
+    if (oldVersion < 3) {
+      // Create temporary table with new schema
+      await db.execute('''
+        CREATE TABLE habits_temp (
+          habitId INTEGER PRIMARY KEY AUTOINCREMENT,
+          habitName TEXT NOT NULL,
+          reminderTime INTEGER,
+          currentStreak INTEGER NOT NULL,
+          bestStreak INTEGER NOT NULL,
+          isCompletedToday INTEGER NOT NULL,
+          startDate TEXT NOT NULL,
+          lastCompletionDate TEXT,
+          selectedDays TEXT NOT NULL DEFAULT '1,2,3,4,5,6,7'
+        )
+      ''');
+
+      // Copy data from old table to temporary table
+      await db.execute('''
+        INSERT INTO habits_temp (
+          habitId,
+          habitName,
+          reminderTime,
+          currentStreak,
+          bestStreak,
+          isCompletedToday,
+          startDate,
+          lastCompletionDate
+        )
+        SELECT
+          habitId,
+          habitName,
+          reminderTime,
+          currentStreak,
+          bestStreak,
+          isCompletedToday,
+          startDate,
+          lastCompletionDate
+        FROM ${HabitDatabase().tableName}
+      ''');
+
+      // Drop the old table
+      await db.execute('DROP TABLE ${HabitDatabase().tableName}');
+
+      // Rename the temporary table to the original name
+      await db.execute(
+          'ALTER TABLE habits_temp RENAME TO ${HabitDatabase().tableName}');
     }
   }
 

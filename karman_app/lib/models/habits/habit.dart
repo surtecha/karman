@@ -1,7 +1,10 @@
+import 'package:karman_app/models/habits/habit_schedule.dart';
+
 class Habit {
   final int? habitId;
   final String habitName;
   final Duration? reminderTime;
+  final HabitSchedule schedule;
   int currentStreak;
   int bestStreak;
   bool isCompletedToday;
@@ -17,10 +20,11 @@ class Habit {
     this.isCompletedToday = false,
     required this.startDate,
     this.lastCompletionDate,
+    this.schedule = const HabitSchedule(),
   });
 
   Map<String, dynamic> toMap() {
-    return {
+    final map = {
       'habitId': habitId,
       'habitName': habitName,
       'reminderTime': reminderTime?.inMinutes,
@@ -30,6 +34,8 @@ class Habit {
       'startDate': startDate.toIso8601String(),
       'lastCompletionDate': lastCompletionDate?.toIso8601String(),
     };
+    map.addAll(schedule.toMap());
+    return map;
   }
 
   factory Habit.fromMap(Map<String, dynamic> map) {
@@ -46,6 +52,7 @@ class Habit {
       lastCompletionDate: map['lastCompletionDate'] != null
           ? DateTime.parse(map['lastCompletionDate'])
           : null,
+      schedule: HabitSchedule.fromMap(map),
     );
   }
 
@@ -58,6 +65,7 @@ class Habit {
     bool? isCompletedToday,
     DateTime? startDate,
     DateTime? lastCompletionDate,
+    HabitSchedule? schedule,
   }) {
     return Habit(
       habitId: habitId ?? this.habitId,
@@ -68,7 +76,24 @@ class Habit {
       isCompletedToday: isCompletedToday ?? this.isCompletedToday,
       startDate: startDate ?? this.startDate,
       lastCompletionDate: lastCompletionDate ?? this.lastCompletionDate,
+      schedule: schedule ?? this.schedule,
     );
+  }
+
+  bool shouldCompleteToday() {
+    final now = DateTime.now();
+    return schedule.isDaySelected(now.weekday);
+  }
+
+  bool hasSkippedRequiredDays(DateTime start, DateTime end) {
+    DateTime current = start.add(Duration(days: 1));
+    while (current.isBefore(end)) {
+      if (schedule.isDaySelected(current.weekday)) {
+        return true;
+      }
+      current = current.add(Duration(days: 1));
+    }
+    return false;
   }
 
   void resetStreak() {
@@ -79,16 +104,27 @@ class Habit {
   }
 
   void updateStreak(DateTime completionDate) {
-    if (lastCompletionDate == null ||
-        completionDate.difference(lastCompletionDate!).inDays == 1) {
-      currentStreak++;
-      if (currentStreak > bestStreak) {
-        bestStreak = currentStreak;
-      }
-    } else if (completionDate.difference(lastCompletionDate!).inDays > 1) {
-      resetStreak();
+    if (lastCompletionDate == null) {
       currentStreak = 1;
+    } else {
+      final daysDifference =
+          completionDate.difference(lastCompletionDate!).inDays;
+
+      if (daysDifference == 1 ||
+          (daysDifference > 1 &&
+              !hasSkippedRequiredDays(lastCompletionDate!, completionDate))) {
+        currentStreak++;
+      } else if (daysDifference > 1 &&
+          hasSkippedRequiredDays(lastCompletionDate!, completionDate)) {
+        resetStreak();
+        currentStreak = 1;
+      }
     }
+
+    if (currentStreak > bestStreak) {
+      bestStreak = currentStreak;
+    }
+
     lastCompletionDate = completionDate;
     isCompletedToday = true;
   }
