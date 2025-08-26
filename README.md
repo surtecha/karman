@@ -1,16 +1,18 @@
 # karman
 
-A new Flutter project.
+karman v2 development has officially started! 🎉
 
-## Getting Started
+This next version of karman will address existing bugs, resolve issues, and introduce new features, all while staying true to the original vision: a **minimalist, free, and open‑source productivity app** that respects your privacy.
 
-This project is a starting point for a Flutter application.
+## What to Expect in v2
 
-A few resources to get you started if this is your first Flutter project:
+* Bug fixes and stability improvements
+* Community‑driven new features
+* Continued focus on clean, distraction‑free design
+* 100% free and open‑source, forever
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Get Involved
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+We’re building karman together with the community. If you’d like to follow development progress, suggest new ideas, or just hang out with like‑minded productivity enthusiasts, join our [Discord](https://discord.gg/AH7dAXfxkD)
+
+
