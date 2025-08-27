@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:karman/components/floating_action_button.dart';
 import 'package:karman/components/pill_button.dart';
 
-class TodoPage extends StatelessWidget {
-  const TodoPage({super.key});
+class TodoScreen extends StatelessWidget {
+  const TodoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

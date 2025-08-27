@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 
-class PomodoroPage extends StatelessWidget {
+class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Pomodoro'),
+        middle: Text('Settings'),
       ),
       child: Center(
         child: Text(
-          'Pomodoro Page',
+          'Settings Page',
           style: TextStyle(fontSize: 24),
         ),
       ),

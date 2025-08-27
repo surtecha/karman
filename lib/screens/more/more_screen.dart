@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-class MorePage extends StatelessWidget {
+class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(

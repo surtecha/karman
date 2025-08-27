@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
-class HabitsPage extends StatelessWidget {
+class HabitsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(

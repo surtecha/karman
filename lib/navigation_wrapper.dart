@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
-import 'package:karman/screens/habits/habits_page.dart';
-import 'package:karman/screens/more/more_page.dart';
-import 'package:karman/screens/pomodoro/pomodoro_page.dart';
-import 'package:karman/screens/settings/settings_page.dart';
-import 'package:karman/screens/todo/todo_page.dart';
+import 'package:karman/screens/habits/habits_screen.dart';
+import 'package:karman/screens/more/more_screen.dart';
+import 'package:karman/screens/pomodoro/pomodoro_screen.dart';
+import 'package:karman/screens/settings/settings_screen.dart';
+import 'package:karman/screens/todo/todo_screen.dart';
 
 
 class NavigationWrapper extends StatefulWidget {
@@ -15,11 +15,11 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   int _selectedIndex = 2;
 
   final List<Widget> _pages = [
-    MorePage(),
-    PomodoroPage(),
-    TodoPage(),
-    HabitsPage(),
-    SettingsPage(),
+    MoreScreen(),
+    PomodoroScreen(),
+    TodoScreen(),
+    HabitsScreen(),
+    SettingsScreen(),
   ];
 
   @override
