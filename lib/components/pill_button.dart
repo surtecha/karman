@@ -1,15 +1,18 @@
 import 'package:flutter/cupertino.dart';
+import 'package:karman/color_scheme.dart';
 
 class PillButton extends StatefulWidget {
   final List<String> options;
   final List<int> counts;
   final Function(int) onSelectionChanged;
+  final Color Function(int)? selectedBackgroundColor;
 
   const PillButton({
     super.key,
     required this.options,
     required this.counts,
     required this.onSelectionChanged,
+    this.selectedBackgroundColor,
   });
 
   @override
@@ -65,7 +68,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
   }
 
   Widget _buildPillButton(int index, String option, int count) {
-    bool isSelected = selectedIndex == index;
+    Color selectedBgColor = widget.selectedBackgroundColor?.call(index) ?? AppColorScheme.accent(context);
 
     return GestureDetector(
       onTap: () {
@@ -83,12 +86,12 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
         builder: (context, child) {
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 12,
+              horizontal: 24,
               vertical: 10,
             ),
             decoration: BoxDecoration(
-              color: isSelected ? CupertinoColors.systemBlue : CupertinoColors.systemGrey6,
-              borderRadius: BorderRadius.circular(25),
+              color: AppColorScheme.secondary(context),
+              borderRadius: BorderRadius.circular(30),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -96,8 +99,8 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                 Text(
                   option,
                   style: TextStyle(
-                    color: isSelected ? CupertinoColors.white : CupertinoColors.label,
-                    fontWeight: FontWeight.w500,
+                    color: AppColorScheme.textPrimary(context),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizeTransition(
@@ -112,15 +115,14 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: CupertinoColors.white.withValues(alpha: 0.2),
+                            color: selectedBgColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
                             count.toString(),
-                            style: const TextStyle(
-                              color: CupertinoColors.white,
+                            style: TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),

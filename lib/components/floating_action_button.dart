@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:karman/color_scheme.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -16,7 +17,7 @@ class CustomFloatingActionButton extends StatelessWidget {
         width: 56,
         height: 56,
         decoration: BoxDecoration(
-          color: CupertinoColors.systemBlue,
+          color: AppColorScheme.accent(context),
           shape: BoxShape.circle,
         ),
         child: Icon(

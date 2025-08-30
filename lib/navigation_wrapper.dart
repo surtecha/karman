@@ -4,9 +4,11 @@ import 'package:karman/screens/more/more_screen.dart';
 import 'package:karman/screens/pomodoro/pomodoro_screen.dart';
 import 'package:karman/screens/settings/settings_screen.dart';
 import 'package:karman/screens/todo/todo_screen.dart';
-
+import 'color_scheme.dart';
 
 class NavigationWrapper extends StatefulWidget {
+  const NavigationWrapper({super.key});
+
   @override
   _NavigationWrapperState createState() => _NavigationWrapperState();
 }
@@ -26,6 +28,7 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
+        activeColor: AppColorScheme.accent(context),
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {

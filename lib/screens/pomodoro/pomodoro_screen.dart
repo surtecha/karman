@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
 class PomodoroScreen extends StatelessWidget {
+  const PomodoroScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
