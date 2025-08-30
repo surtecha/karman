@@ -22,7 +22,9 @@ class CustomFloatingActionButton extends StatelessWidget {
         ),
         child: Icon(
           CupertinoIcons.add,
-          color: CupertinoColors.white,
+          color: MediaQuery.of(context).platformBrightness == Brightness.dark
+              ? CupertinoColors.black
+              : CupertinoColors.white,
           size: 24,
         ),
       ),

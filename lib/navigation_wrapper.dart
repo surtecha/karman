@@ -29,6 +29,8 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
         activeColor: AppColorScheme.accent(context),
+        backgroundColor: AppColorScheme.primary(context),
+        border: null,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
