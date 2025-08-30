@@ -12,38 +12,47 @@ class AppColorScheme extends InheritedWidget {
     return result!;
   }
 
+  static bool _isDarkMode(BuildContext context) =>
+      MediaQuery.of(context).platformBrightness == Brightness.dark;
+
+  static Color defaultColor(BuildContext context) {
+    return _isDarkMode(context)
+        ? CupertinoColors.white
+        : CupertinoColors.black;
+  }
+  static const Color red = CupertinoColors.systemRed;
+  static const Color blue = CupertinoColors.systemBlue;
+  static const Color green = CupertinoColors.systemGreen;
+  static const Color orange = CupertinoColors.systemOrange;
+  static const Color purple = CupertinoColors.systemPurple;
+  static const Color indigo = CupertinoColors.systemIndigo;
+  static const Color cyan = CupertinoColors.systemCyan;
+
   static Color primary(BuildContext context) {
     return CupertinoColors.systemBackground;
   }
 
   static Color secondary(BuildContext context) {
-    return MediaQuery.of(context).platformBrightness == Brightness.dark
+    return _isDarkMode(context)
         ? CupertinoColors.darkBackgroundGray
-        : CupertinoColors.systemGrey6;
+        : CupertinoColors.extraLightBackgroundGray;
   }
 
   static Color accent(BuildContext context) {
-    return CupertinoColors.systemBlue;
+    return AppColorScheme.defaultColor(context);
   }
 
   static Color textPrimary(BuildContext context) {
-    return MediaQuery.of(context).platformBrightness == Brightness.dark
+    return _isDarkMode(context)
         ? CupertinoColors.white
         : CupertinoColors.black;
   }
 
   static Color textSecondary(BuildContext context) {
-    return MediaQuery.of(context).platformBrightness == Brightness.dark
+    return _isDarkMode(context)
         ? CupertinoColors.systemGrey
         : CupertinoColors.systemGrey2;
   }
-
-  static const Color red = CupertinoColors.systemRed;
-  static const Color blue = CupertinoColors.systemBlue;
-  static const Color orange = CupertinoColors.systemOrange;
-  static const Color green = CupertinoColors.systemGreen;
-  static const Color purple = CupertinoColors.systemPurple;
-  static const Color teal = CupertinoColors.systemTeal;
 
   @override
   bool updateShouldNotify(AppColorScheme oldWidget) {
