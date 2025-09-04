@@ -86,7 +86,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
         builder: (context, child) {
           return Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: 24,
+              horizontal: 20,
               vertical: 10,
             ),
             decoration: BoxDecoration(
@@ -123,6 +123,9 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
+                              color: MediaQuery.of(context).platformBrightness == Brightness.dark ?
+                                  CupertinoColors.black:
+                                  CupertinoColors.white,
                             ),
                           ),
                         ),
