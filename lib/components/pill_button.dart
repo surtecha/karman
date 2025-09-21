@@ -68,7 +68,6 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
   }
 
   Widget _buildPillButton(int index, String option, int count) {
-    Color selectedBgColor = widget.selectedBackgroundColor?.call(index) ?? AppColorScheme.accent(context);
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
