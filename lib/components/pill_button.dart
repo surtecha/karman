@@ -69,6 +69,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
 
   Widget _buildPillButton(int index, String option, int count) {
     Color selectedBgColor = widget.selectedBackgroundColor?.call(index) ?? AppColorScheme.accent(context);
+    bool isSelected = selectedIndex == index;
 
     return GestureDetector(
       onTap: () {
@@ -90,8 +91,8 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
               vertical: 10,
             ),
             decoration: BoxDecoration(
-              color: AppColorScheme.secondary(context),
-              borderRadius: BorderRadius.circular(30),
+              color: isSelected ? AppColorScheme.accent(context) : AppColorScheme.backgroundSecondary(context),
+              borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -99,7 +100,11 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                 Text(
                   option,
                   style: TextStyle(
-                    color: AppColorScheme.textPrimary(context),
+                    color: isSelected ?
+                    (MediaQuery.of(context).platformBrightness == Brightness.dark ?
+                    CupertinoColors.black:
+                    CupertinoColors.white) :
+                    AppColorScheme.textPrimary(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -115,7 +120,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: selectedBgColor,
+                            color: AppColorScheme.backgroundPrimary(context),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -123,9 +128,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: MediaQuery.of(context).platformBrightness == Brightness.dark ?
-                                  CupertinoColors.black:
-                                  CupertinoColors.white,
+                              color: AppColorScheme.accent(context),
                             ),
                           ),
                         ),
