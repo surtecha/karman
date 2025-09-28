@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'navigation_wrapper.dart';
-import 'color_scheme.dart';
+import 'theme/theme_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,11 +18,40 @@ class Karman extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppColorScheme(
-      child: CupertinoApp(
-        title: 'karman',
-        debugShowCheckedModeBanner: false,
-        home: NavigationWrapper(),
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider()..initialize(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          if (!themeProvider.isInitialized) {
+            return CupertinoApp(
+              home: CupertinoPageScaffold(
+                child: Center(child: CupertinoActivityIndicator()),
+              ),
+            );
+          }
+
+          return MediaQuery(
+            data: MediaQuery.of(context),
+            child: Builder(
+              builder: (context) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final brightness = MediaQuery.of(context).platformBrightness;
+                  themeProvider.updateSystemBrightness(brightness);
+                });
+
+                return CupertinoApp(
+                  title: 'karman',
+                  debugShowCheckedModeBanner: false,
+                  theme: CupertinoThemeData(
+                    brightness: themeProvider.isDark ? Brightness.dark : Brightness.light,
+                    primaryColor: themeProvider.accentColor,
+                  ),
+                  home: NavigationWrapper(),
+                );
+              },
+            ),
+          );
+        },
       ),
     );
   }

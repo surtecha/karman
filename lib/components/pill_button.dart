@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:karman/color_scheme.dart';
+import 'package:karman/theme/color_scheme.dart';
+import 'package:karman/theme/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class PillButton extends StatefulWidget {
   final List<String> options;
@@ -51,23 +53,27 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(widget.options.length, (index) =>
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: _buildPillButton(index, widget.options[index], widget.counts[index]),
+    return Consumer<ThemeProvider>(
+      builder: (context, theme, child) {
+        return Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(widget.options.length, (index) =>
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: _buildPillButton(index, widget.options[index], widget.counts[index], theme),
+                  ),
               ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildPillButton(int index, String option, int count) {
+  Widget _buildPillButton(int index, String option, int count, ThemeProvider theme) {
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
@@ -90,7 +96,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
               vertical: 10,
             ),
             decoration: BoxDecoration(
-              color: isSelected ? AppColorScheme.accent(context) : AppColorScheme.backgroundSecondary(context),
+              color: isSelected ? AppColorScheme.accent(theme, context) : AppColorScheme.backgroundSecondary(theme),
               borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
@@ -100,10 +106,8 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                   option,
                   style: TextStyle(
                     color: isSelected ?
-                    (MediaQuery.of(context).platformBrightness == Brightness.dark ?
-                    CupertinoColors.black:
-                    CupertinoColors.white) :
-                    AppColorScheme.textPrimary(context),
+                    (theme.isDark ? CupertinoColors.black : CupertinoColors.white) :
+                    AppColorScheme.textPrimary(theme),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -119,7 +123,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: AppColorScheme.backgroundPrimary(context),
+                            color: AppColorScheme.backgroundPrimary(theme),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -127,7 +131,7 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColorScheme.accent(context),
+                              color: AppColorScheme.accent(theme, context),
                             ),
                           ),
                         ),
