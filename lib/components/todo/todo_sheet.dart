@@ -5,9 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:karman/components/common/nav_button.dart';
 import 'package:karman/components/todo/name_description_section.dart';
 import 'package:karman/components/todo/reminder_section.dart';
+import '../../models/todo.dart';
+import '../../providers/todo_provider.dart';
 
 class TodoSheet extends StatefulWidget {
-  const TodoSheet({super.key});
+  final Todo? todo;
+
+  const TodoSheet({super.key, this.todo});
 
   @override
   State<TodoSheet> createState() => _TodoSheetState();
@@ -21,10 +25,22 @@ class _TodoSheetState extends State<TodoSheet> {
   bool _hasReminder = false;
   DateTime? _selectedDate;
   DateTime? _selectedTime;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
+
+    if (widget.todo != null) {
+      _nameController.text = widget.todo!.name;
+      _descriptionController.text = widget.todo!.description ?? '';
+      _hasReminder = widget.todo!.reminder != null;
+      if (widget.todo!.reminder != null) {
+        _selectedDate = widget.todo!.reminder;
+        _selectedTime = widget.todo!.reminder;
+      }
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) => _nameFocusNode.requestFocus());
   }
 
@@ -36,6 +52,47 @@ class _TodoSheetState extends State<TodoSheet> {
     super.dispose();
   }
 
+  DateTime? _getCombinedDateTime() {
+    if (!_hasReminder || _selectedDate == null || _selectedTime == null) {
+      return null;
+    }
+
+    return DateTime(
+      _selectedDate!.year,
+      _selectedDate!.month,
+      _selectedDate!.day,
+      _selectedTime!.hour,
+      _selectedTime!.minute,
+    );
+  }
+
+  Future<void> _saveTodo() async {
+    if (_nameController.text.trim().isEmpty || _isSaving) return;
+
+    setState(() => _isSaving = true);
+
+    final todo = Todo(
+      id: widget.todo?.id,
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
+      reminder: _getCombinedDateTime(),
+      completed: widget.todo?.completed ?? false,
+    );
+
+    try {
+      if (widget.todo != null) {
+        await context.read<TodoProvider>().updateTodoDirectly(todo);
+      } else {
+        await context.read<TodoProvider>().addTodo(todo);
+      }
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      setState(() => _isSaving = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
@@ -44,18 +101,24 @@ class _TodoSheetState extends State<TodoSheet> {
           backgroundColor: AppColorScheme.backgroundSecondary(theme),
           navigationBar: CupertinoNavigationBar(
             backgroundColor: AppColorScheme.backgroundSecondary(theme),
-            middle: const Text('New Todo'),
+            middle: Text(widget.todo != null ? 'Edit Todo' : 'New Todo'),
             leading: NavButton(
               icon: CupertinoIcons.xmark,
               color: AppColorScheme.surfaceElevated(theme),
               iconColor: AppColorScheme.textPrimary(theme),
-              onPressed: Navigator.of(context).pop,
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            trailing: NavButton(
+            trailing: _isSaving
+                ? const CupertinoActivityIndicator()
+                : NavButton(
               icon: CupertinoIcons.checkmark,
-              color: AppColorScheme.accent(theme, context),
-              iconColor: AppColorScheme.backgroundPrimary(theme),
-              onPressed: Navigator.of(context).pop,
+              color: _nameController.text.trim().isEmpty
+                  ? AppColorScheme.surfaceElevated(theme)
+                  : AppColorScheme.accent(theme, context),
+              iconColor: _nameController.text.trim().isEmpty
+                  ? AppColorScheme.textSecondary(theme)
+                  : AppColorScheme.backgroundPrimary(theme),
+              onPressed: _saveTodo,
             ),
           ),
           child: SafeArea(
@@ -75,7 +138,18 @@ class _TodoSheetState extends State<TodoSheet> {
                         hasReminder: _hasReminder,
                         selectedDate: _selectedDate,
                         selectedTime: _selectedTime,
-                        onReminderToggle: (value) => setState(() => _hasReminder = value),
+                        onReminderToggle: (value) {
+                          setState(() {
+                            _hasReminder = value;
+                            if (value && _selectedDate == null) {
+                              _selectedDate = DateTime.now();
+                            }
+                            if (value && _selectedTime == null) {
+                              final now = DateTime.now();
+                              _selectedTime = DateTime(2000, 1, 1, now.hour + 1, 0);
+                            }
+                          });
+                        },
                         onDateChanged: (date) => setState(() => _selectedDate = date),
                         onTimeChanged: (time) => setState(() => _selectedTime = time),
                       ),

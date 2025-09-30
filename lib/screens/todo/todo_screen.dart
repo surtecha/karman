@@ -5,28 +5,48 @@ import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:karman/components/pill_button.dart';
 import 'package:karman/components/todo/todo_sheet.dart';
+import 'package:karman/components/todo/todo_list.dart';
+import '../../providers/todo_provider.dart';
+import 'completed_todo_screen.dart';
 
-class TodoScreen extends StatelessWidget {
+class TodoScreen extends StatefulWidget {
   const TodoScreen({super.key});
 
-  void _openTodoSheet(BuildContext context) {
+  @override
+  State<TodoScreen> createState() => _TodoScreenState();
+}
+
+class _TodoScreenState extends State<TodoScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TodoProvider>().loadTodos();
+    });
+  }
+
+  void _openTodoSheet(BuildContext context, {todo}) {
     showCupertinoModalPopup(
       context: context,
-      builder: (context) => TodoSheet(),
+      builder: (context) => TodoSheet(todo: todo),
+    );
+  }
+
+  void _openCompletedTodos(BuildContext context) {
+    Navigator.of(context).push(
+      CupertinoPageRoute(builder: (context) => const CompletedTodosScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, theme, child) {
+    return Consumer2<ThemeProvider, TodoProvider>(
+      builder: (context, theme, todoProvider, child) {
         return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(
             leading: CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: () {
-
-              },
+              onPressed: () {},
               child: Icon(
                 CupertinoIcons.ellipsis_circle,
                 size: 28,
@@ -35,9 +55,7 @@ class TodoScreen extends StatelessWidget {
             ),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: () {
-
-              },
+              onPressed: () => _openCompletedTodos(context),
               child: Icon(
                 CupertinoIcons.checkmark_circle,
                 size: 28,
@@ -54,24 +72,34 @@ class TodoScreen extends StatelessWidget {
                       children: [
                         Container(
                           width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           child: PillButton(
-                            options: ['Today', 'Scheduled', 'Decide'],
-                            counts: [5, 12, 8],
-                            onSelectionChanged: (index) {
-
-                            },
+                            options: const ['Today', 'Scheduled', 'Decide'],
+                            counts: [
+                              todoProvider.todayTodos.length,
+                              todoProvider.scheduledTodos.length,
+                              todoProvider.decideTodos.length,
+                            ],
+                            onSelectionChanged: todoProvider.setSelectedIndex,
+                            initialSelection: todoProvider.selectedIndex,
                           ),
                         ),
                         Expanded(
-                          child: Center(
-                            child: Text(
-                              'Todo Page',
-                              style: TextStyle(
-                                fontSize: 24,
-                                color: AppColorScheme.textPrimary(theme),
+                          child: todoProvider.isLoading
+                              ? const Center(child: CupertinoActivityIndicator())
+                              : CustomScrollView(
+                            slivers: [
+                              TodoList(
+                                todos: todoProvider.currentTodos,
+                                onTodoTap: (todo) => _openTodoSheet(context, todo: todo),
+                                onTodoToggle: (todo, completed) =>
+                                    todoProvider.toggleTodo(todo),
+                                onTodoDelete: (todo) =>
+                                    todoProvider.deleteTodo(todo),
+                                onReorder: (oldIndex, newIndex) =>
+                                    todoProvider.reorderTodos(oldIndex, newIndex),
                               ),
-                            ),
+                            ],
                           ),
                         ),
                       ],
