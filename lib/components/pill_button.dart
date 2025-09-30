@@ -7,14 +7,14 @@ class PillButton extends StatefulWidget {
   final List<String> options;
   final List<int> counts;
   final Function(int) onSelectionChanged;
-  final Color Function(int)? selectedBackgroundColor;
+  final int initialSelection;
 
   const PillButton({
     super.key,
     required this.options,
     required this.counts,
     required this.onSelectionChanged,
-    this.selectedBackgroundColor,
+    this.initialSelection = 0,
   });
 
   @override
@@ -22,13 +22,31 @@ class PillButton extends StatefulWidget {
 }
 
 class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
-  int selectedIndex = 0;
+  late int selectedIndex;
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
 
   @override
   void initState() {
     super.initState();
+    selectedIndex = widget.initialSelection;
+    _initializeAnimations();
+    _controllers[selectedIndex].forward();
+  }
+
+  @override
+  void didUpdateWidget(PillButton oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.options.length != widget.options.length) {
+      _disposeAnimations();
+      _initializeAnimations();
+      if (selectedIndex < widget.options.length) {
+        _controllers[selectedIndex].forward();
+      }
+    }
+  }
+
+  void _initializeAnimations() {
     _controllers = List.generate(widget.options.length, (index) =>
         AnimationController(
           duration: const Duration(milliseconds: 300),
@@ -39,15 +57,17 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
     _animations = _controllers.map((controller) =>
         CurvedAnimation(parent: controller, curve: Curves.easeInOut)
     ).toList();
+  }
 
-    _controllers[selectedIndex].forward();
+  void _disposeAnimations() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
   }
 
   @override
   void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
+    _disposeAnimations();
     super.dispose();
   }
 
@@ -63,7 +83,12 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
               children: List.generate(widget.options.length, (index) =>
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _buildPillButton(index, widget.options[index], widget.counts[index], theme),
+                    child: _buildPillButton(
+                        index,
+                        widget.options[index],
+                        index < widget.counts.length ? widget.counts[index] : 0,
+                        theme
+                    ),
                   ),
               ),
             ),

@@ -78,18 +78,22 @@ class AppColorScheme {
         : CupertinoColors.black.withValues(alpha: 0.1);
   }
 
+  // Red reserved for system indicators (delete, overdue)
+  static Color destructive(BuildContext context) {
+    return CupertinoColors.destructiveRed.resolveFrom(context);
+  }
+
   static const Map<String, CupertinoDynamicColor> accentColors = {
     'default': CupertinoDynamicColor.withBrightness(
       color: Color(0xFF000000),
       darkColor: Color(0xFFFFFFFF),
     ),
-    'red': CupertinoColors.systemRed,
+    'purple': CupertinoColors.systemPurple,
+    'indigo': CupertinoColors.systemIndigo,
     'blue': CupertinoColors.systemBlue,
     'green': CupertinoColors.systemGreen,
-    'orange': CupertinoColors.systemOrange,
-    'purple': CupertinoColors.systemPurple,
     'yellow': CupertinoColors.systemYellow,
-    'indigo': CupertinoColors.systemIndigo,
-    'cyan': CupertinoColors.systemCyan,
+    'orange': CupertinoColors.systemOrange,
+    'pink': CupertinoColors.systemPink
   };
 }

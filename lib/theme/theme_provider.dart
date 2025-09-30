@@ -9,7 +9,7 @@ class ThemeProvider extends ChangeNotifier {
   static const String _accentColorKey = 'accent_color';
 
   AppThemeMode _themeMode = AppThemeMode.system;
-  String _accentColorName = 'orange';
+  String _accentColorName = 'default';
   bool _isInitialized = false;
   Brightness? _systemBrightness;
 
@@ -28,7 +28,7 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
-  CupertinoDynamicColor get accentColor => AppColorScheme.accentColors[_accentColorName] ?? CupertinoColors.systemOrange;
+  CupertinoDynamicColor get accentColor => AppColorScheme.accentColors[_accentColorName] ?? AppColorScheme.accentColors['default']!;
 
   void updateSystemBrightness(Brightness brightness) {
     if (_systemBrightness != brightness) {
