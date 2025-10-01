@@ -41,6 +41,7 @@ dependencies:
   shared_preferences: ^2.5.3
   path: ^1.9.1
   flutter_localization: ^0.3.3
+  home_widget: ^0.8.0
 
 dev_dependencies:
   flutter_test:
