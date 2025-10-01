@@ -10,6 +10,8 @@ class TodoTile extends StatelessWidget {
   final VoidCallback onTap;
   final Function(bool?) onToggle;
   final VoidCallback onDelete;
+  final bool isSelected;
+  final bool isSelectionMode;
 
   const TodoTile({
     super.key,
@@ -17,6 +19,8 @@ class TodoTile extends StatelessWidget {
     required this.onTap,
     required this.onToggle,
     required this.onDelete,
+    this.isSelected = false,
+    this.isSelectionMode = false,
   });
 
   String _formatReminder() {
@@ -46,7 +50,7 @@ class TodoTile extends StatelessWidget {
       builder: (context, theme, child) {
         return Dismissible(
           key: Key('${todo.id}_dismissible'),
-          direction: DismissDirection.endToStart,
+          direction: isSelectionMode ? DismissDirection.none : DismissDirection.endToStart,
           onDismissed: (_) {
             HapticFeedback.mediumImpact();
             onDelete();
@@ -62,10 +66,12 @@ class TodoTile extends StatelessWidget {
             ),
           ),
           child: Container(
-            color: AppColorScheme.backgroundPrimary(theme),
+            color: isSelected
+                ? AppColorScheme.accent(theme, context).withOpacity(0.1)
+                : AppColorScheme.backgroundPrimary(theme),
             child: CupertinoButton(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              onPressed: onTap,
+              onPressed: isSelectionMode ? () => onToggle(null) : onTap,
               child: Row(
                 children: [
                   GestureDetector(
@@ -76,14 +82,20 @@ class TodoTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: todo.isVisuallyCompleted
+                          color: isSelectionMode && isSelected
+                              ? AppColorScheme.accent(theme, context)
+                              : todo.isVisuallyCompleted
                               ? AppColorScheme.accent(theme, context)
                               : AppColorScheme.textSecondary(theme),
                           width: 2,
                         ),
-                        color: todo.isVisuallyCompleted ? AppColorScheme.accent(theme, context) : null,
+                        color: isSelectionMode && isSelected
+                            ? AppColorScheme.accent(theme, context)
+                            : todo.isVisuallyCompleted
+                            ? AppColorScheme.accent(theme, context)
+                            : null,
                       ),
-                      child: todo.isVisuallyCompleted
+                      child: (isSelectionMode && isSelected) || todo.isVisuallyCompleted
                           ? Icon(
                         CupertinoIcons.checkmark,
                         size: 16,
