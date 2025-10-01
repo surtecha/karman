@@ -69,7 +69,7 @@ class ReminderSection extends StatelessWidget {
               icon: CupertinoIcons.bell,
               label: 'Reminder',
               context: context,
-              child: CustomCupertinoSwitch(
+              child: CustomSwitch(
                 value: hasReminder,
                 onChanged: onReminderToggle,
               ),
