@@ -6,6 +6,7 @@ import 'package:karman/theme/color_scheme.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../../models/todo.dart';
+import '../../providers/todo_provider.dart';
 import 'todo_tile.dart';
 
 class TodoList extends StatelessWidget {
@@ -37,8 +38,8 @@ class TodoList extends StatelessWidget {
       );
     }
 
-    return Consumer<ThemeProvider>(
-      builder: (context, theme, child) {
+    return Consumer2<ThemeProvider, TodoProvider>(
+      builder: (context, theme, todoProvider, child) {
         return SliverToBoxAdapter(
           child: Material(
             color: Colors.transparent,
@@ -60,8 +61,16 @@ class TodoList extends StatelessWidget {
                     child: TodoTile(
                       todo: todo,
                       onTap: () => onTodoTap(todo),
-                      onToggle: (completed) => onTodoToggle(todo, completed ?? false),
+                      onToggle: (completed) {
+                        if (todoProvider.isSelectionMode) {
+                          todoProvider.toggleTodoSelection(todo.id!);
+                        } else {
+                          onTodoToggle(todo, completed ?? false);
+                        }
+                      },
                       onDelete: () => onTodoDelete(todo),
+                      isSelected: todoProvider.isTodoSelected(todo.id!),
+                      isSelectionMode: todoProvider.isSelectionMode,
                     ),
                   );
                 },

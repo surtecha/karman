@@ -6,6 +6,7 @@ class Todo {
   final bool completed;
   final bool pendingCompletion;
   final int sortOrder;
+  final bool isDeleted;
 
   Todo({
     this.id,
@@ -15,6 +16,7 @@ class Todo {
     this.completed = false,
     this.pendingCompletion = false,
     this.sortOrder = 0,
+    this.isDeleted = false,
   });
 
   Map<String, dynamic> toMap() {
@@ -25,6 +27,7 @@ class Todo {
       'reminder': reminder?.millisecondsSinceEpoch,
       'completed': completed ? 1 : 0,
       'sort_order': sortOrder,
+      'is_deleted': isDeleted ? 1 : 0,
     };
   }
 
@@ -38,6 +41,7 @@ class Todo {
           : null,
       completed: map['completed'] == 1,
       sortOrder: map['sort_order'] ?? 0,
+      isDeleted: map['is_deleted'] == 1,
     );
   }
 
@@ -49,6 +53,7 @@ class Todo {
     bool? completed,
     bool? pendingCompletion,
     int? sortOrder,
+    bool? isDeleted,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -58,6 +63,7 @@ class Todo {
       completed: completed ?? this.completed,
       pendingCompletion: pendingCompletion ?? this.pendingCompletion,
       sortOrder: sortOrder ?? this.sortOrder,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 

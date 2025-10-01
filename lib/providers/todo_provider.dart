@@ -6,13 +6,19 @@ import '../models/todo.dart';
 class TodoProvider extends ChangeNotifier {
   final TodoRepository _repository = TodoRepository();
   List<Todo> _todos = [];
+  List<Todo> _deletedTodos = [];
   bool _isLoading = false;
   int _selectedIndex = 0;
   final Map<int, Timer> _completionTimers = {};
+  bool _isSelectionMode = false;
+  final Set<int> _selectedTodoIds = {};
 
   List<Todo> get todos => _todos;
+  List<Todo> get deletedTodos => _deletedTodos;
   bool get isLoading => _isLoading;
   int get selectedIndex => _selectedIndex;
+  bool get isSelectionMode => _isSelectionMode;
+  Set<int> get selectedTodoIds => _selectedTodoIds;
 
   List<Todo> get todayTodos => _todos.where((todo) {
     if ((todo.completed && !todo.pendingCompletion) || todo.reminder == null) return false;
@@ -52,6 +58,42 @@ class TodoProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleSelectionMode() {
+    _isSelectionMode = !_isSelectionMode;
+    if (!_isSelectionMode) {
+      _selectedTodoIds.clear();
+    }
+    notifyListeners();
+  }
+
+  void toggleTodoSelection(int todoId) {
+    if (_selectedTodoIds.contains(todoId)) {
+      _selectedTodoIds.remove(todoId);
+    } else {
+      _selectedTodoIds.add(todoId);
+    }
+    notifyListeners();
+  }
+
+  bool isTodoSelected(int todoId) {
+    return _selectedTodoIds.contains(todoId);
+  }
+
+  Future<void> deleteSelectedTodos() async {
+    try {
+      for (final todoId in _selectedTodoIds) {
+        await _repository.softDeleteTodo(todoId);
+      }
+      await loadTodos();
+      await loadDeletedTodos();
+      _selectedTodoIds.clear();
+      _isSelectionMode = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deleting selected todos: $e');
+    }
+  }
+
   Future<void> loadTodos() async {
     _isLoading = true;
     notifyListeners();
@@ -62,6 +104,15 @@ class TodoProvider extends ChangeNotifier {
     }
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> loadDeletedTodos() async {
+    try {
+      _deletedTodos = await _repository.getDeletedTodos();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading deleted todos: $e');
+    }
   }
 
   Future<void> addTodo(Todo todo) async {
@@ -136,11 +187,32 @@ class TodoProvider extends ChangeNotifier {
     try {
       _completionTimers[todo.id!]?.cancel();
       _completionTimers.remove(todo.id!);
-      await _repository.deleteTodo(todo.id!);
+      await _repository.softDeleteTodo(todo.id!);
       _todos.removeWhere((t) => t.id == todo.id);
+      await loadDeletedTodos();
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting todo: $e');
+    }
+  }
+
+  Future<void> permanentlyDeleteTodo(int todoId) async {
+    try {
+      await _repository.deleteTodo(todoId);
+      _deletedTodos.removeWhere((t) => t.id == todoId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error permanently deleting todo: $e');
+    }
+  }
+
+  Future<void> restoreTodo(int todoId) async {
+    try {
+      await _repository.restoreTodo(todoId);
+      await loadTodos();
+      await loadDeletedTodos();
+    } catch (e) {
+      debugPrint('Error restoring todo: $e');
     }
   }
 

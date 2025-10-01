@@ -11,7 +11,23 @@ class TodoRepository {
 
   Future<List<Todo>> getAllTodos() async {
     final db = await _databaseHelper.database;
-    final List<Map<String, dynamic>> maps = await db.query('todos', orderBy: 'sort_order ASC');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'todos',
+      where: 'is_deleted = ?',
+      whereArgs: [0],
+      orderBy: 'sort_order ASC',
+    );
+    return List.generate(maps.length, (i) => Todo.fromMap(maps[i]));
+  }
+
+  Future<List<Todo>> getDeletedTodos() async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'todos',
+      where: 'is_deleted = ?',
+      whereArgs: [1],
+      orderBy: 'id DESC',
+    );
     return List.generate(maps.length, (i) => Todo.fromMap(maps[i]));
   }
 
@@ -23,8 +39,8 @@ class TodoRepository {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'todos',
-      where: 'completed = ? AND ((reminder IS NULL) OR (reminder >= ? AND reminder <= ?))',
-      whereArgs: [0, startOfDay.millisecondsSinceEpoch, endOfDay.millisecondsSinceEpoch],
+      where: 'is_deleted = ? AND completed = ? AND ((reminder IS NULL) OR (reminder >= ? AND reminder <= ?))',
+      whereArgs: [0, 0, startOfDay.millisecondsSinceEpoch, endOfDay.millisecondsSinceEpoch],
       orderBy: 'sort_order ASC',
     );
     return List.generate(maps.length, (i) => Todo.fromMap(maps[i]));
@@ -37,8 +53,8 @@ class TodoRepository {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'todos',
-      where: 'completed = ? AND reminder IS NOT NULL AND reminder > ?',
-      whereArgs: [0, endOfToday.millisecondsSinceEpoch],
+      where: 'is_deleted = ? AND completed = ? AND reminder IS NOT NULL AND reminder > ?',
+      whereArgs: [0, 0, endOfToday.millisecondsSinceEpoch],
       orderBy: 'sort_order ASC',
     );
     return List.generate(maps.length, (i) => Todo.fromMap(maps[i]));
@@ -48,8 +64,8 @@ class TodoRepository {
     final db = await _databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'todos',
-      where: 'completed = ? AND reminder IS NULL',
-      whereArgs: [0],
+      where: 'is_deleted = ? AND completed = ? AND reminder IS NULL',
+      whereArgs: [0, 0],
       orderBy: 'sort_order ASC',
     );
     return List.generate(maps.length, (i) => Todo.fromMap(maps[i]));
@@ -69,6 +85,26 @@ class TodoRepository {
     final db = await _databaseHelper.database;
     return await db.delete(
       'todos',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> softDeleteTodo(int id) async {
+    final db = await _databaseHelper.database;
+    return await db.update(
+      'todos',
+      {'is_deleted': 1},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> restoreTodo(int id) async {
+    final db = await _databaseHelper.database;
+    return await db.update(
+      'todos',
+      {'is_deleted': 0},
       where: 'id = ?',
       whereArgs: [id],
     );
