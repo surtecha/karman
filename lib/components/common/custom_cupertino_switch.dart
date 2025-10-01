@@ -7,11 +7,7 @@ class CustomSwitch extends StatelessWidget {
   final bool value;
   final Function(bool) onChanged;
 
-  const CustomSwitch({
-    super.key,
-    required this.value,
-    required this.onChanged,
-  });
+  const CustomSwitch({super.key, required this.value, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +20,9 @@ class CustomSwitch extends StatelessWidget {
             activeThumbColor: AppColorScheme.backgroundPrimary(theme),
             activeTrackColor: AppColorScheme.accent(theme, context),
             inactiveTrackColor: AppColorScheme.backgroundSecondary(theme),
-            trackOutlineColor: WidgetStateProperty.all(AppColorScheme.backgroundSecondary(theme)),
+            trackOutlineColor: WidgetStateProperty.all(
+              AppColorScheme.backgroundSecondary(theme),
+            ),
             onChanged: onChanged,
           ),
         );

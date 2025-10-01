@@ -67,14 +67,14 @@ class AppearanceSelector extends StatelessWidget {
   }
 
   Widget _buildThemeOption(
-      ThemeProvider theme,
-      BuildContext context,
-      AppThemeMode mode,
-      String title,
-      IconData icon, {
-        bool isFirst = false,
-        bool isLast = false,
-      }) {
+    ThemeProvider theme,
+    BuildContext context,
+    AppThemeMode mode,
+    String title,
+    IconData icon, {
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
     final isSelected = theme.themeMode == mode;
 
     return GestureDetector(
@@ -93,17 +93,22 @@ class AppearanceSelector extends StatelessWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColorScheme.accent(theme, context).withOpacity(0.15)
-                    : AppColorScheme.backgroundTertiary(theme),
+                color:
+                    isSelected
+                        ? AppColorScheme.accent(
+                          theme,
+                          context,
+                        ).withOpacity(0.15)
+                        : AppColorScheme.backgroundTertiary(theme),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,
                 size: 18,
-                color: isSelected
-                    ? AppColorScheme.accent(theme, context)
-                    : AppColorScheme.textSecondary(theme),
+                color:
+                    isSelected
+                        ? AppColorScheme.accent(theme, context)
+                        : AppColorScheme.textSecondary(theme),
               ),
             ),
             const SizedBox(width: 16),

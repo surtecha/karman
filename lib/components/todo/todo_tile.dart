@@ -31,13 +31,19 @@ class TodoTile extends StatelessWidget {
     final today = DateTime(now.year, now.month, now.day);
     final reminderDay = DateTime(reminder.year, reminder.month, reminder.day);
 
-    String dateStr = reminderDay == today
-        ? 'Today'
-        : reminderDay == today.add(const Duration(days: 1))
-        ? 'Tomorrow'
-        : '${reminder.day}/${reminder.month}';
+    String dateStr =
+        reminderDay == today
+            ? 'Today'
+            : reminderDay == today.add(const Duration(days: 1))
+            ? 'Tomorrow'
+            : '${reminder.day}/${reminder.month}';
 
-    final hour = reminder.hour == 0 ? 12 : reminder.hour > 12 ? reminder.hour - 12 : reminder.hour;
+    final hour =
+        reminder.hour == 0
+            ? 12
+            : reminder.hour > 12
+            ? reminder.hour - 12
+            : reminder.hour;
     final minute = reminder.minute.toString().padLeft(2, '0');
     final period = reminder.hour < 12 ? 'AM' : 'PM';
 
@@ -50,7 +56,10 @@ class TodoTile extends StatelessWidget {
       builder: (context, theme, child) {
         return Dismissible(
           key: Key('${todo.id}_dismissible'),
-          direction: isSelectionMode ? DismissDirection.none : DismissDirection.endToStart,
+          direction:
+              isSelectionMode
+                  ? DismissDirection.none
+                  : DismissDirection.endToStart,
           onDismissed: (_) {
             HapticFeedback.mediumImpact();
             onDelete();
@@ -66,9 +75,10 @@ class TodoTile extends StatelessWidget {
             ),
           ),
           child: Container(
-            color: isSelected
-                ? AppColorScheme.accent(theme, context).withOpacity(0.1)
-                : AppColorScheme.backgroundPrimary(theme),
+            color:
+                isSelected
+                    ? AppColorScheme.accent(theme, context).withOpacity(0.1)
+                    : AppColorScheme.backgroundPrimary(theme),
             child: CupertinoButton(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               onPressed: isSelectionMode ? () => onToggle(null) : onTap,
@@ -82,26 +92,30 @@ class TodoTile extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: isSelectionMode && isSelected
-                              ? AppColorScheme.accent(theme, context)
-                              : todo.isVisuallyCompleted
-                              ? AppColorScheme.accent(theme, context)
-                              : AppColorScheme.textSecondary(theme),
+                          color:
+                              isSelectionMode && isSelected
+                                  ? AppColorScheme.accent(theme, context)
+                                  : todo.isVisuallyCompleted
+                                  ? AppColorScheme.accent(theme, context)
+                                  : AppColorScheme.textSecondary(theme),
                           width: 2,
                         ),
-                        color: isSelectionMode && isSelected
-                            ? AppColorScheme.accent(theme, context)
-                            : todo.isVisuallyCompleted
-                            ? AppColorScheme.accent(theme, context)
-                            : null,
+                        color:
+                            isSelectionMode && isSelected
+                                ? AppColorScheme.accent(theme, context)
+                                : todo.isVisuallyCompleted
+                                ? AppColorScheme.accent(theme, context)
+                                : null,
                       ),
-                      child: (isSelectionMode && isSelected) || todo.isVisuallyCompleted
-                          ? Icon(
-                        CupertinoIcons.checkmark,
-                        size: 16,
-                        color: AppColorScheme.backgroundPrimary(theme),
-                      )
-                          : null,
+                      child:
+                          (isSelectionMode && isSelected) ||
+                                  todo.isVisuallyCompleted
+                              ? Icon(
+                                CupertinoIcons.checkmark,
+                                size: 16,
+                                color: AppColorScheme.backgroundPrimary(theme),
+                              )
+                              : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -114,9 +128,10 @@ class TodoTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: todo.isVisuallyCompleted ?
-                            AppColorScheme.textSecondary(theme):
-                            AppColorScheme.textPrimary(theme),
+                            color:
+                                todo.isVisuallyCompleted
+                                    ? AppColorScheme.textSecondary(theme)
+                                    : AppColorScheme.textPrimary(theme),
                           ),
                         ),
                         if (todo.description?.isNotEmpty == true) ...[
@@ -126,7 +141,10 @@ class TodoTile extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               color: AppColorScheme.textSecondary(theme),
-                              decoration: todo.isVisuallyCompleted ? TextDecoration.lineThrough : null,
+                              decoration:
+                                  todo.isVisuallyCompleted
+                                      ? TextDecoration.lineThrough
+                                      : null,
                             ),
                           ),
                         ],

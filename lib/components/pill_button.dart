@@ -47,16 +47,21 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
   }
 
   void _initializeAnimations() {
-    _controllers = List.generate(widget.options.length, (index) =>
-        AnimationController(
-          duration: const Duration(milliseconds: 300),
-          vsync: this,
-        ),
+    _controllers = List.generate(
+      widget.options.length,
+      (index) => AnimationController(
+        duration: const Duration(milliseconds: 300),
+        vsync: this,
+      ),
     );
 
-    _animations = _controllers.map((controller) =>
-        CurvedAnimation(parent: controller, curve: Curves.easeInOut)
-    ).toList();
+    _animations =
+        _controllers
+            .map(
+              (controller) =>
+                  CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+            )
+            .toList();
   }
 
   void _disposeAnimations() {
@@ -80,16 +85,17 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
             scrollDirection: Axis.horizontal,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.options.length, (index) =>
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: _buildPillButton(
-                        index,
-                        widget.options[index],
-                        index < widget.counts.length ? widget.counts[index] : 0,
-                        theme
-                    ),
+              children: List.generate(
+                widget.options.length,
+                (index) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: _buildPillButton(
+                    index,
+                    widget.options[index],
+                    index < widget.counts.length ? widget.counts[index] : 0,
+                    theme,
                   ),
+                ),
               ),
             ),
           ),
@@ -98,7 +104,12 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildPillButton(int index, String option, int count, ThemeProvider theme) {
+  Widget _buildPillButton(
+    int index,
+    String option,
+    int count,
+    ThemeProvider theme,
+  ) {
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
@@ -116,12 +127,12 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
         animation: Listenable.merge(_animations),
         builder: (context, child) {
           return Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 10,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: isSelected ? AppColorScheme.accent(theme, context) : AppColorScheme.backgroundSecondary(theme),
+              color:
+                  isSelected
+                      ? AppColorScheme.accent(theme, context)
+                      : AppColorScheme.backgroundSecondary(theme),
               borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
@@ -130,9 +141,12 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                 Text(
                   option,
                   style: TextStyle(
-                    color: isSelected ?
-                    (theme.isDark ? CupertinoColors.black : CupertinoColors.white) :
-                    AppColorScheme.textPrimary(theme),
+                    color:
+                        isSelected
+                            ? (theme.isDark
+                                ? CupertinoColors.black
+                                : CupertinoColors.white)
+                            : AppColorScheme.textPrimary(theme),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -146,7 +160,10 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                       FadeTransition(
                         opacity: _animations[index],
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColorScheme.backgroundPrimary(theme),
                             borderRadius: BorderRadius.circular(12),

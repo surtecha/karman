@@ -43,16 +43,19 @@ class DatabaseHelper {
     final columns = await db.rawQuery('PRAGMA table_info(todos)');
     final columnNames = columns.map((col) => col['name'] as String).toList();
     if (!columnNames.contains('sort_order')) {
-      await db.execute('ALTER TABLE todos ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE todos ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0',
+      );
     }
     if (!columnNames.contains('is_deleted')) {
-      await db.execute('ALTER TABLE todos ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE todos ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0',
+      );
     }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < newVersion) {
-    }
+    if (oldVersion < newVersion) {}
   }
 
   Future<void> close() async {

@@ -55,9 +55,7 @@ class NavigationWrapper extends StatelessWidget {
             items: _tabItems,
           ),
           tabBuilder: (context, index) {
-            return CupertinoTabView(
-              builder: (context) => _pages[index],
-            );
+            return CupertinoTabView(builder: (context) => _pages[index]);
           },
         );
       },

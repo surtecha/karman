@@ -83,7 +83,9 @@ class TodoList extends StatelessWidget {
                   return AnimatedBuilder(
                     animation: animation,
                     builder: (context, child) {
-                      final animValue = Curves.fastOutSlowIn.transform(animation.value);
+                      final animValue = Curves.fastOutSlowIn.transform(
+                        animation.value,
+                      );
                       return Transform.scale(
                         scale: 1.0 + (animValue * 0.05),
                         child: Container(

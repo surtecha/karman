@@ -20,36 +20,63 @@ class TodoProvider extends ChangeNotifier {
   bool get isSelectionMode => _isSelectionMode;
   Set<int> get selectedTodoIds => _selectedTodoIds;
 
-  List<Todo> get todayTodos => _todos.where((todo) {
-    if ((todo.completed && !todo.pendingCompletion) || todo.reminder == null) return false;
-    final now = DateTime.now();
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    final reminderDate = DateTime(todo.reminder!.year, todo.reminder!.month, todo.reminder!.day);
-    return reminderDate.isBefore(tomorrow);
-  }).toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  List<Todo> get todayTodos =>
+      _todos.where((todo) {
+          if ((todo.completed && !todo.pendingCompletion) ||
+              todo.reminder == null) {
+            return false;
+          }
+          final now = DateTime.now();
+          final tomorrow = DateTime(now.year, now.month, now.day + 1);
+          final reminderDate = DateTime(
+            todo.reminder!.year,
+            todo.reminder!.month,
+            todo.reminder!.day,
+          );
+          return reminderDate.isBefore(tomorrow);
+        }).toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-  List<Todo> get scheduledTodos => _todos.where((todo) {
-    if ((todo.completed && !todo.pendingCompletion) || todo.reminder == null) return false;
-    final now = DateTime.now();
-    final tomorrow = DateTime(now.year, now.month, now.day + 1);
-    final reminderDate = DateTime(todo.reminder!.year, todo.reminder!.month, todo.reminder!.day);
-    return !reminderDate.isBefore(tomorrow);
-  }).toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  List<Todo> get scheduledTodos =>
+      _todos.where((todo) {
+          if ((todo.completed && !todo.pendingCompletion) ||
+              todo.reminder == null)
+            return false;
+          final now = DateTime.now();
+          final tomorrow = DateTime(now.year, now.month, now.day + 1);
+          final reminderDate = DateTime(
+            todo.reminder!.year,
+            todo.reminder!.month,
+            todo.reminder!.day,
+          );
+          return !reminderDate.isBefore(tomorrow);
+        }).toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-  List<Todo> get decideTodos => _todos.where((todo) =>
-  !(todo.completed && !todo.pendingCompletion) && todo.reminder == null
-  ).toList()..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+  List<Todo> get decideTodos =>
+      _todos
+          .where(
+            (todo) =>
+                !(todo.completed && !todo.pendingCompletion) &&
+                todo.reminder == null,
+          )
+          .toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-  List<Todo> get completedTodos => _todos.where((todo) =>
-  todo.completed && !todo.pendingCompletion
-  ).toList()..sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
+  List<Todo> get completedTodos =>
+      _todos.where((todo) => todo.completed && !todo.pendingCompletion).toList()
+        ..sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
 
   List<Todo> get currentTodos {
     switch (_selectedIndex) {
-      case 0: return todayTodos;
-      case 1: return scheduledTodos;
-      case 2: return decideTodos;
-      default: return [];
+      case 0:
+        return todayTodos;
+      case 1:
+        return scheduledTodos;
+      case 2:
+        return decideTodos;
+      default:
+        return [];
     }
   }
 
@@ -117,7 +144,10 @@ class TodoProvider extends ChangeNotifier {
 
   Future<void> addTodo(Todo todo) async {
     try {
-      final maxOrder = _todos.isEmpty ? 0 : _todos.map((t) => t.sortOrder).reduce((a, b) => a > b ? a : b);
+      final maxOrder =
+          _todos.isEmpty
+              ? 0
+              : _todos.map((t) => t.sortOrder).reduce((a, b) => a > b ? a : b);
       final todoWithOrder = todo.copyWith(sortOrder: maxOrder + 1);
       final id = await _repository.insertTodo(todoWithOrder);
       _todos.add(todoWithOrder.copyWith(id: id));
@@ -149,11 +179,13 @@ class TodoProvider extends ChangeNotifier {
     notifyListeners();
 
     _completionTimers[todo.id!] = Timer(
-        todo.completed ? const Duration(seconds: 2) : const Duration(milliseconds: 100),
-            () async {
-          await _repository.updateTodo(todo);
-          _completionTimers.remove(todo.id!);
-        }
+      todo.completed
+          ? const Duration(seconds: 2)
+          : const Duration(milliseconds: 100),
+      () async {
+        await _repository.updateTodo(todo);
+        _completionTimers.remove(todo.id!);
+      },
     );
   }
 
@@ -168,7 +200,10 @@ class TodoProvider extends ChangeNotifier {
       notifyListeners();
 
       _completionTimers[todo.id!] = Timer(const Duration(seconds: 2), () async {
-        final completedTodo = pendingTodo.copyWith(completed: true, pendingCompletion: false);
+        final completedTodo = pendingTodo.copyWith(
+          completed: true,
+          pendingCompletion: false,
+        );
         final currentIndex = _todos.indexWhere((t) => t.id == todo.id);
         _todos[currentIndex] = completedTodo;
         await _repository.updateTodo(completedTodo);
@@ -178,7 +213,10 @@ class TodoProvider extends ChangeNotifier {
     } else {
       _completionTimers[todo.id!]?.cancel();
       _completionTimers.remove(todo.id!);
-      final uncompletedTodo = todo.copyWith(completed: false, pendingCompletion: false);
+      final uncompletedTodo = todo.copyWith(
+        completed: false,
+        pendingCompletion: false,
+      );
       await updateTodo(uncompletedTodo);
     }
   }

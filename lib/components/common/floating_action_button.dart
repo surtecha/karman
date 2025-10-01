@@ -6,10 +6,7 @@ import 'package:provider/provider.dart';
 class CustomFloatingActionButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const CustomFloatingActionButton({
-    super.key,
-    required this.onPressed,
-  });
+  const CustomFloatingActionButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +23,8 @@ class CustomFloatingActionButton extends StatelessWidget {
             ),
             child: Icon(
               CupertinoIcons.add,
-              color: theme.isDark ? CupertinoColors.black : CupertinoColors.white,
+              color:
+                  theme.isDark ? CupertinoColors.black : CupertinoColors.white,
               size: 24,
             ),
           ),

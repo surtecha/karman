@@ -67,11 +67,12 @@ class _TodoScreenState extends State<TodoScreen> {
             backgroundColor: AppColorScheme.backgroundPrimary(theme),
             leading: CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: () => TodoContextMenu.show(
-                context,
-                todoProvider,
-                onDeletedItemsTap: () => _openDeletedTodos(context),
-              ),
+              onPressed:
+                  () => TodoContextMenu.show(
+                    context,
+                    todoProvider,
+                    onDeletedItemsTap: () => _openDeletedTodos(context),
+                  ),
               child: Icon(
                 CupertinoIcons.ellipsis_circle,
                 size: 28,
@@ -81,9 +82,10 @@ class _TodoScreenState extends State<TodoScreen> {
             trailing: MultiSelectorNavButton(
               isSelectionMode: todoProvider.isSelectionMode,
               hasSelectedItems: todoProvider.selectedTodoIds.isNotEmpty,
-              onPressed: todoProvider.isSelectionMode
-                  ? () => _handleDelete(context, todoProvider)
-                  : () => _openCompletedTodos(context),
+              onPressed:
+                  todoProvider.isSelectionMode
+                      ? () => _handleDelete(context, todoProvider)
+                      : () => _openCompletedTodos(context),
             ),
           ),
           child: SafeArea(
@@ -114,24 +116,35 @@ class _TodoScreenState extends State<TodoScreen> {
                           ),
                         ),
                         Expanded(
-                          child: todoProvider.isLoading
-                              ? const Center(child: CupertinoActivityIndicator())
-                              : CustomScrollView(
-                            slivers: [
-                              TodoList(
-                                todos: todoProvider.currentTodos,
-                                onTodoTap: (todo) =>
-                                    _openTodoSheet(context, todo: todo),
-                                onTodoToggle: (todo, completed) =>
-                                    todoProvider.toggleTodo(todo),
-                                onTodoDelete: (todo) =>
-                                    todoProvider.deleteTodo(todo),
-                                onReorder: (oldIndex, newIndex) =>
-                                    todoProvider.reorderTodos(
-                                        oldIndex, newIndex),
-                              ),
-                            ],
-                          ),
+                          child:
+                              todoProvider.isLoading
+                                  ? const Center(
+                                    child: CupertinoActivityIndicator(),
+                                  )
+                                  : CustomScrollView(
+                                    slivers: [
+                                      TodoList(
+                                        todos: todoProvider.currentTodos,
+                                        onTodoTap:
+                                            (todo) => _openTodoSheet(
+                                              context,
+                                              todo: todo,
+                                            ),
+                                        onTodoToggle:
+                                            (todo, completed) =>
+                                                todoProvider.toggleTodo(todo),
+                                        onTodoDelete:
+                                            (todo) =>
+                                                todoProvider.deleteTodo(todo),
+                                        onReorder:
+                                            (oldIndex, newIndex) =>
+                                                todoProvider.reorderTodos(
+                                                  oldIndex,
+                                                  newIndex,
+                                                ),
+                                      ),
+                                    ],
+                                  ),
                         ),
                       ],
                     ),

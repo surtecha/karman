@@ -77,19 +77,23 @@ class _AccentColorSelectorState extends State<AccentColorSelector> {
                         onSelectedItemChanged: _onSelectedItemChanged,
                         looping: true,
                         diameterRatio: 1.5,
-                        children: _colorNames.map((colorName) {
-                          final color = AppColorScheme.accentColors[colorName]!
-                              .resolveFrom(context);
-                          return Container(
-                            width: 40,
-                            height: 40,
-                            margin: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                            ),
-                          );
-                        }).toList(),
+                        children:
+                            _colorNames.map((colorName) {
+                              final color = AppColorScheme
+                                  .accentColors[colorName]!
+                                  .resolveFrom(context);
+                              return Container(
+                                width: 40,
+                                height: 40,
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  shape: BoxShape.circle,
+                                ),
+                              );
+                            }).toList(),
                       ),
                     ),
                   ),

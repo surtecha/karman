@@ -32,10 +32,7 @@ class MultiSelector<T> extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       color: AppColorScheme.accent(theme, context).withOpacity(0.1),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -53,9 +50,7 @@ class MultiSelector<T> extends StatelessWidget {
             onPressed: onToggleMode,
             child: Text(
               'Cancel',
-              style: TextStyle(
-                color: AppColorScheme.accent(theme, context),
-              ),
+              style: TextStyle(color: AppColorScheme.accent(theme, context)),
             ),
           ),
         ],
@@ -90,9 +85,10 @@ class MultiSelectorNavButton extends StatelessWidget {
       child: Icon(
         isSelectionMode ? activeIcon : inactiveIcon,
         size: 28,
-        color: isSelectionMode && !hasSelectedItems
-            ? AppColorScheme.textSecondary(theme)
-            : AppColorScheme.accent(theme, context),
+        color:
+            isSelectionMode && !hasSelectedItems
+                ? AppColorScheme.textSecondary(theme)
+                : AppColorScheme.accent(theme, context),
       ),
     );
   }

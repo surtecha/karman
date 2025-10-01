@@ -28,7 +28,9 @@ class ThemeProvider extends ChangeNotifier {
     }
   }
 
-  CupertinoDynamicColor get accentColor => AppColorScheme.accentColors[_accentColorName] ?? AppColorScheme.accentColors['default']!;
+  CupertinoDynamicColor get accentColor =>
+      AppColorScheme.accentColors[_accentColorName] ??
+      AppColorScheme.accentColors['default']!;
 
   void updateSystemBrightness(Brightness brightness) {
     if (_systemBrightness != brightness) {
@@ -60,7 +62,8 @@ class ThemeProvider extends ChangeNotifier {
     }
 
     final savedAccent = prefs.getString(_accentColorKey);
-    if (savedAccent != null && AppColorScheme.accentColors.containsKey(savedAccent)) {
+    if (savedAccent != null &&
+        AppColorScheme.accentColors.containsKey(savedAccent)) {
       _accentColorName = savedAccent;
     }
 
@@ -78,7 +81,9 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   Future<void> setAccentColor(String colorName) async {
-    if (_accentColorName == colorName || !AppColorScheme.accentColors.containsKey(colorName)) return;
+    if (_accentColorName == colorName ||
+        !AppColorScheme.accentColors.containsKey(colorName))
+      return;
 
     _accentColorName = colorName;
     final prefs = await SharedPreferences.getInstance();

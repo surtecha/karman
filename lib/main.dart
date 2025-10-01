@@ -48,7 +48,8 @@ class _KarmanState extends State<Karman> with WidgetsBindingObserver {
   }
 
   void _updateBrightness() {
-    final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
     widget.themeProvider.updateSystemBrightness(brightness);
   }
 

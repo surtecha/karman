@@ -19,7 +19,8 @@ class TodoSheet extends StatefulWidget {
 
 class _TodoSheetState extends State<TodoSheet> {
   late final TextEditingController _nameController = TextEditingController();
-  late final TextEditingController _descriptionController = TextEditingController();
+  late final TextEditingController _descriptionController =
+      TextEditingController();
   late final FocusNode _nameFocusNode = FocusNode();
 
   bool _hasReminder = false;
@@ -41,7 +42,9 @@ class _TodoSheetState extends State<TodoSheet> {
       }
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _nameFocusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _nameFocusNode.requestFocus(),
+    );
   }
 
   @override
@@ -74,9 +77,10 @@ class _TodoSheetState extends State<TodoSheet> {
     final todo = Todo(
       id: widget.todo?.id,
       name: _nameController.text.trim(),
-      description: _descriptionController.text.trim().isEmpty
-          ? null
-          : _descriptionController.text.trim(),
+      description:
+          _descriptionController.text.trim().isEmpty
+              ? null
+              : _descriptionController.text.trim(),
       reminder: _getCombinedDateTime(),
       completed: widget.todo?.completed ?? false,
     );
@@ -108,18 +112,21 @@ class _TodoSheetState extends State<TodoSheet> {
               iconColor: AppColorScheme.textPrimary(theme),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            trailing: _isSaving
-                ? const CupertinoActivityIndicator()
-                : NavButton(
-              icon: CupertinoIcons.checkmark,
-              color: _nameController.text.trim().isEmpty
-                  ? AppColorScheme.surfaceElevated(theme)
-                  : AppColorScheme.accent(theme, context),
-              iconColor: _nameController.text.trim().isEmpty
-                  ? AppColorScheme.textSecondary(theme)
-                  : AppColorScheme.backgroundPrimary(theme),
-              onPressed: _saveTodo,
-            ),
+            trailing:
+                _isSaving
+                    ? const CupertinoActivityIndicator()
+                    : NavButton(
+                      icon: CupertinoIcons.checkmark,
+                      color:
+                          _nameController.text.trim().isEmpty
+                              ? AppColorScheme.surfaceElevated(theme)
+                              : AppColorScheme.accent(theme, context),
+                      iconColor:
+                          _nameController.text.trim().isEmpty
+                              ? AppColorScheme.textSecondary(theme)
+                              : AppColorScheme.backgroundPrimary(theme),
+                      onPressed: _saveTodo,
+                    ),
           ),
           child: SafeArea(
             child: CustomScrollView(
@@ -146,12 +153,20 @@ class _TodoSheetState extends State<TodoSheet> {
                             }
                             if (value && _selectedTime == null) {
                               final now = DateTime.now();
-                              _selectedTime = DateTime(2000, 1, 1, now.hour + 1, 0);
+                              _selectedTime = DateTime(
+                                2000,
+                                1,
+                                1,
+                                now.hour + 1,
+                                0,
+                              );
                             }
                           });
                         },
-                        onDateChanged: (date) => setState(() => _selectedDate = date),
-                        onTimeChanged: (time) => setState(() => _selectedTime = time),
+                        onDateChanged:
+                            (date) => setState(() => _selectedDate = date),
+                        onTimeChanged:
+                            (time) => setState(() => _selectedTime = time),
                       ),
                     ],
                   ),

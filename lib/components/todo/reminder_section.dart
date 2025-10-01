@@ -29,34 +29,45 @@ class ReminderSection extends StatelessWidget {
   void _showDatePicker(BuildContext context) {
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (_) => DateTimePickerModal(
-        initialDateTime: selectedDate ?? DateTime.now(),
-        mode: CupertinoDatePickerMode.date,
-        onChanged: onDateChanged,
-      ),
+      builder:
+          (_) => DateTimePickerModal(
+            initialDateTime: selectedDate ?? DateTime.now(),
+            mode: CupertinoDatePickerMode.date,
+            onChanged: onDateChanged,
+          ),
     );
   }
 
   void _showTimePicker(BuildContext context) {
     showCupertinoModalPopup<void>(
       context: context,
-      builder: (_) => DateTimePickerModal(
-        initialDateTime: selectedTime ?? DateTime.now(),
-        mode: CupertinoDatePickerMode.time,
-        use24hFormat: false,
-        onChanged: onTimeChanged,
-      ),
+      builder:
+          (_) => DateTimePickerModal(
+            initialDateTime: selectedTime ?? DateTime.now(),
+            mode: CupertinoDatePickerMode.time,
+            use24hFormat: false,
+            onChanged: onTimeChanged,
+          ),
     );
   }
 
-  String _formatDate() => selectedDate?.let((d) => '${d.day}/${d.month}/${d.year}') ?? 'Select Date';
+  String _formatDate() =>
+      selectedDate?.let((d) => '${d.day}/${d.month}/${d.year}') ??
+      'Select Date';
 
-  String _formatTime() => selectedTime?.let((t) {
-    final hour = t.hour == 0 ? 12 : t.hour > 12 ? t.hour - 12 : t.hour;
-    final minute = t.minute.toString().padLeft(2, '0');
-    final period = t.hour < 12 ? 'AM' : 'PM';
-    return '$hour:$minute $period';
-  }) ?? 'Select Time';
+  String _formatTime() =>
+      selectedTime?.let((t) {
+        final hour =
+            t.hour == 0
+                ? 12
+                : t.hour > 12
+                ? t.hour - 12
+                : t.hour;
+        final minute = t.minute.toString().padLeft(2, '0');
+        final period = t.hour < 12 ? 'AM' : 'PM';
+        return '$hour:$minute $period';
+      }) ??
+      'Select Time';
 
   @override
   Widget build(BuildContext context) {

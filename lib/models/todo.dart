@@ -36,9 +36,10 @@ class Todo {
       id: map['id'],
       name: map['name'],
       description: map['description'],
-      reminder: map['reminder'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['reminder'])
-          : null,
+      reminder:
+          map['reminder'] != null
+              ? DateTime.fromMillisecondsSinceEpoch(map['reminder'])
+              : null,
       completed: map['completed'] == 1,
       sortOrder: map['sort_order'] ?? 0,
       isDeleted: map['is_deleted'] == 1,

@@ -39,8 +39,14 @@ class TodoRepository {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'todos',
-      where: 'is_deleted = ? AND completed = ? AND ((reminder IS NULL) OR (reminder >= ? AND reminder <= ?))',
-      whereArgs: [0, 0, startOfDay.millisecondsSinceEpoch, endOfDay.millisecondsSinceEpoch],
+      where:
+          'is_deleted = ? AND completed = ? AND ((reminder IS NULL) OR (reminder >= ? AND reminder <= ?))',
+      whereArgs: [
+        0,
+        0,
+        startOfDay.millisecondsSinceEpoch,
+        endOfDay.millisecondsSinceEpoch,
+      ],
       orderBy: 'sort_order ASC',
     );
     return List.generate(maps.length, (i) => Todo.fromMap(maps[i]));
@@ -53,7 +59,8 @@ class TodoRepository {
 
     final List<Map<String, dynamic>> maps = await db.query(
       'todos',
-      where: 'is_deleted = ? AND completed = ? AND reminder IS NOT NULL AND reminder > ?',
+      where:
+          'is_deleted = ? AND completed = ? AND reminder IS NOT NULL AND reminder > ?',
       whereArgs: [0, 0, endOfToday.millisecondsSinceEpoch],
       orderBy: 'sort_order ASC',
     );
@@ -83,11 +90,7 @@ class TodoRepository {
 
   Future<int> deleteTodo(int id) async {
     final db = await _databaseHelper.database;
-    return await db.delete(
-      'todos',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('todos', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> softDeleteTodo(int id) async {

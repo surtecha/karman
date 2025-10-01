@@ -26,18 +26,21 @@ class CompletedTodosScreen extends StatelessWidget {
             ),
           ),
           child: SafeArea(
-            child: todoProvider.isLoading
-                ? const Center(child: CupertinoActivityIndicator())
-                : CustomScrollView(
-              slivers: [
-                TodoList(
-                  todos: todoProvider.completedTodos,
-                  onTodoTap: (todo) {},
-                  onTodoToggle: (todo, completed) => todoProvider.toggleTodo(todo),
-                  onTodoDelete: (todo) => todoProvider.deleteTodo(todo),
-                ),
-              ],
-            ),
+            child:
+                todoProvider.isLoading
+                    ? const Center(child: CupertinoActivityIndicator())
+                    : CustomScrollView(
+                      slivers: [
+                        TodoList(
+                          todos: todoProvider.completedTodos,
+                          onTodoTap: (todo) {},
+                          onTodoToggle:
+                              (todo, completed) =>
+                                  todoProvider.toggleTodo(todo),
+                          onTodoDelete: (todo) => todoProvider.deleteTodo(todo),
+                        ),
+                      ],
+                    ),
           ),
         );
       },
