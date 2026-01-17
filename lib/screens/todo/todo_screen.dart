@@ -105,11 +105,16 @@ class _TodoScreenState extends State<TodoScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           child: PillButton(
-                            options: const ['Today', 'Scheduled', 'Decide'],
+                            options: const ['Low', 'Medium', 'High'],
                             counts: [
-                              todoProvider.todayTodos.length,
-                              todoProvider.scheduledTodos.length,
-                              todoProvider.decideTodos.length,
+                              todoProvider.lowPriorityTodos.length,
+                              todoProvider.mediumPriorityTodos.length,
+                              todoProvider.highPriorityTodos.length,
+                            ],
+                            colors: [
+                              AppColorScheme.accentColors['green']!.resolveFrom(context),
+                              AppColorScheme.accentColors['orange']!.resolveFrom(context),
+                              AppColorScheme.destructive(context),
                             ],
                             onSelectionChanged: todoProvider.setSelectedIndex,
                             initialSelection: todoProvider.selectedIndex,

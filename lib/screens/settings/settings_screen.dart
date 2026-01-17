@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:karman/components/settings/accent_color_selector.dart';
 import 'package:karman/components/settings/appearance_selector.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:karman/theme/color_scheme.dart';
@@ -20,8 +19,6 @@ class SettingsScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: 20),
                 const AppearanceSelector(),
-                const SizedBox(height: 32),
-                const AccentColorSelector(),
               ],
             ),
           ),

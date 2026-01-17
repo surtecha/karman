@@ -64,6 +64,11 @@ class DatabaseHelper {
         'ALTER TABLE todos ADD COLUMN repeat_days TEXT',
       );
     }
+    if (!columnNames.contains('priority')) {
+      await db.execute(
+        'ALTER TABLE todos ADD COLUMN priority INTEGER NOT NULL DEFAULT 1',
+      );
+    }
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {

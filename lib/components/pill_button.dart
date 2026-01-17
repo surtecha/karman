@@ -8,6 +8,7 @@ class PillButton extends StatefulWidget {
   final List<int> counts;
   final Function(int) onSelectionChanged;
   final int initialSelection;
+  final List<Color>? colors;
 
   const PillButton({
     super.key,
@@ -15,6 +16,7 @@ class PillButton extends StatefulWidget {
     required this.counts,
     required this.onSelectionChanged,
     this.initialSelection = 0,
+    this.colors,
   });
 
   @override
@@ -131,7 +133,9 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
             decoration: BoxDecoration(
               color:
                   isSelected
-                      ? AppColorScheme.accent(theme, context)
+                      ? (widget.colors != null && index < widget.colors!.length
+                          ? widget.colors![index]
+                          : AppColorScheme.accent(theme, context))
                       : AppColorScheme.backgroundSecondary(theme),
               borderRadius: BorderRadius.circular(40),
             ),
@@ -173,7 +177,9 @@ class _PillButtonState extends State<PillButton> with TickerProviderStateMixin {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColorScheme.accent(theme, context),
+                              color: widget.colors != null && index < widget.colors!.length
+                                  ? widget.colors![index]
+                                  : AppColorScheme.accent(theme, context),
                             ),
                           ),
                         ),

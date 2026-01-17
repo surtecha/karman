@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:karman/components/common/nav_button.dart';
 import 'package:karman/components/todo/name_description_section.dart';
 import 'package:karman/components/todo/reminder_section.dart';
+import 'package:karman/components/todo/priority_selector.dart';
 import '../../models/todo.dart';
 import '../../providers/todo_provider.dart';
 
@@ -29,6 +30,7 @@ class _TodoSheetState extends State<TodoSheet> {
   bool _isRepeating = false;
   Set<int> _repeatDays = {};
   bool _isSaving = false;
+  int _priority = 1;
 
   @override
   void initState() {
@@ -40,10 +42,13 @@ class _TodoSheetState extends State<TodoSheet> {
       _hasReminder = widget.todo!.reminder != null || widget.todo!.isRepeating;
       _isRepeating = widget.todo!.isRepeating;
       _repeatDays = widget.todo!.repeatDays;
+      _priority = widget.todo!.priority;
       if (widget.todo!.reminder != null) {
         _selectedDate = widget.todo!.reminder;
         _selectedTime = widget.todo!.reminder;
       }
+    } else {
+      _priority = context.read<TodoProvider>().selectedIndex;
     }
 
     WidgetsBinding.instance.addPostFrameCallback(
@@ -102,6 +107,7 @@ class _TodoSheetState extends State<TodoSheet> {
       completed: widget.todo?.completed ?? false,
       isRepeating: _isRepeating,
       repeatDays: _isRepeating ? _repeatDays : {},
+      priority: _priority,
     );
 
     try {
@@ -211,6 +217,13 @@ class _TodoSheetState extends State<TodoSheet> {
                               _repeatDays.add(day);
                             }
                           });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      PrioritySelector(
+                        selectedPriority: _priority,
+                        onPriorityChanged: (priority) {
+                          setState(() => _priority = priority);
                         },
                       ),
                     ],

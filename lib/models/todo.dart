@@ -9,6 +9,7 @@ class Todo {
   final bool isDeleted;
   final bool isRepeating;
   final Set<int> repeatDays;
+  final int priority;
 
   Todo({
     this.id,
@@ -21,6 +22,7 @@ class Todo {
     this.isDeleted = false,
     this.isRepeating = false,
     this.repeatDays = const {},
+    this.priority = 1,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,6 +36,7 @@ class Todo {
       'is_deleted': isDeleted ? 1 : 0,
       'is_repeating': isRepeating ? 1 : 0,
       'repeat_days': repeatDays.isEmpty ? null : repeatDays.join(','),
+      'priority': priority,
     };
   }
 
@@ -53,6 +56,7 @@ class Todo {
       repeatDays: map['repeat_days'] != null
           ? (map['repeat_days'] as String).split(',').map(int.parse).toSet()
           : {},
+      priority: map['priority'] ?? 1,
     );
   }
 
@@ -67,6 +71,7 @@ class Todo {
     bool? isDeleted,
     bool? isRepeating,
     Set<int>? repeatDays,
+    int? priority,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -79,6 +84,7 @@ class Todo {
       isDeleted: isDeleted ?? this.isDeleted,
       isRepeating: isRepeating ?? this.isRepeating,
       repeatDays: repeatDays ?? this.repeatDays,
+      priority: priority ?? this.priority,
     );
   }
 

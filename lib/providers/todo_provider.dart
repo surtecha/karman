@@ -20,60 +20,21 @@ class TodoProvider extends ChangeNotifier {
   bool get isSelectionMode => _isSelectionMode;
   Set<int> get selectedTodoIds => _selectedTodoIds;
 
-  List<Todo> get todayTodos =>
-      _todos.where((todo) {
-          if (todo.completed && !todo.pendingCompletion) return false;
-
-          if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
-            final now = DateTime.now();
-            final currentWeekday = now.weekday;
-            return todo.repeatDays.contains(currentWeekday);
-          }
-
-          if (todo.reminder == null) return false;
-
-          final now = DateTime.now();
-          final tomorrow = DateTime(now.year, now.month, now.day + 1);
-          final reminderDate = DateTime(
-            todo.reminder!.year,
-            todo.reminder!.month,
-            todo.reminder!.day,
-          );
-          return reminderDate.isBefore(tomorrow);
-        }).toList()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-
-  List<Todo> get scheduledTodos =>
-      _todos.where((todo) {
-          if (todo.completed && !todo.pendingCompletion) return false;
-
-          if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
-            final now = DateTime.now();
-            final currentWeekday = now.weekday;
-            return !todo.repeatDays.contains(currentWeekday);
-          }
-
-          if (todo.reminder == null) return false;
-
-          final now = DateTime.now();
-          final tomorrow = DateTime(now.year, now.month, now.day + 1);
-          final reminderDate = DateTime(
-            todo.reminder!.year,
-            todo.reminder!.month,
-            todo.reminder!.day,
-          );
-          return !reminderDate.isBefore(tomorrow);
-        }).toList()
-        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
-
-  List<Todo> get decideTodos =>
+  List<Todo> get lowPriorityTodos =>
       _todos
-          .where(
-            (todo) =>
-                !(todo.completed && !todo.pendingCompletion) &&
-                !todo.isRepeating &&
-                todo.reminder == null,
-          )
+          .where((todo) => !(todo.completed && !todo.pendingCompletion) && todo.priority == 0)
+          .toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+  List<Todo> get mediumPriorityTodos =>
+      _todos
+          .where((todo) => !(todo.completed && !todo.pendingCompletion) && todo.priority == 1)
+          .toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+  List<Todo> get highPriorityTodos =>
+      _todos
+          .where((todo) => !(todo.completed && !todo.pendingCompletion) && todo.priority == 2)
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
@@ -84,11 +45,11 @@ class TodoProvider extends ChangeNotifier {
   List<Todo> get currentTodos {
     switch (_selectedIndex) {
       case 0:
-        return todayTodos;
+        return lowPriorityTodos;
       case 1:
-        return scheduledTodos;
+        return mediumPriorityTodos;
       case 2:
-        return decideTodos;
+        return highPriorityTodos;
       default:
         return [];
     }
@@ -162,7 +123,10 @@ class TodoProvider extends ChangeNotifier {
           _todos.isEmpty
               ? 0
               : _todos.map((t) => t.sortOrder).reduce((a, b) => a > b ? a : b);
-      final todoWithOrder = todo.copyWith(sortOrder: maxOrder + 1);
+      final todoWithOrder = todo.copyWith(
+        sortOrder: maxOrder + 1,
+        priority: _selectedIndex,
+      );
       final id = await _repository.insertTodo(todoWithOrder);
       _todos.add(todoWithOrder.copyWith(id: id));
       notifyListeners();

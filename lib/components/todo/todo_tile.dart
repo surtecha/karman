@@ -88,6 +88,27 @@ class TodoTile extends StatelessWidget {
     return '$dateStr at $hour:$minute $period';
   }
 
+  bool _isMissedReminder() {
+    if (todo.reminder == null || todo.isVisuallyCompleted) return false;
+    
+    if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
+      final now = DateTime.now();
+      final currentWeekday = now.weekday;
+      if (!todo.repeatDays.contains(currentWeekday)) return false;
+      
+      final reminderTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        todo.reminder!.hour,
+        todo.reminder!.minute,
+      );
+      return now.isAfter(reminderTime);
+    }
+    
+    return DateTime.now().isAfter(todo.reminder!);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
@@ -195,14 +216,18 @@ class TodoTile extends StatelessWidget {
                                     ? CupertinoIcons.repeat 
                                     : CupertinoIcons.bell,
                                 size: 14,
-                                color: AppColorScheme.accent(theme, context),
+                                color: _isMissedReminder()
+                                    ? AppColorScheme.destructive(context)
+                                    : AppColorScheme.accent(theme, context),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 _formatReminder(),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: AppColorScheme.accent(theme, context),
+                                  color: _isMissedReminder()
+                                      ? AppColorScheme.destructive(context)
+                                      : AppColorScheme.accent(theme, context),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
