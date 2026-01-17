@@ -6,24 +6,33 @@ import 'package:karman/components/common/custom_cupertino_switch.dart';
 import 'package:karman/components/common/datetime_picker.dart';
 import 'package:karman/components/common/form_row_with_icon.dart';
 import 'package:karman/components/common/select_button.dart';
+import 'package:karman/components/common/repeat_day_selector.dart';
 import 'package:karman/utilities/extensions.dart';
 
 class ReminderSection extends StatelessWidget {
   final bool hasReminder;
   final DateTime? selectedDate;
   final DateTime? selectedTime;
+  final bool isRepeating;
+  final Set<int> repeatDays;
   final Function(bool) onReminderToggle;
   final Function(DateTime) onDateChanged;
   final Function(DateTime) onTimeChanged;
+  final Function(bool) onRepeatToggle;
+  final Function(int) onDayToggle;
 
   const ReminderSection({
     super.key,
     required this.hasReminder,
     required this.selectedDate,
     required this.selectedTime,
+    required this.isRepeating,
+    required this.repeatDays,
     required this.onReminderToggle,
     required this.onDateChanged,
     required this.onTimeChanged,
+    required this.onRepeatToggle,
+    required this.onDayToggle,
   });
 
   void _showDatePicker(BuildContext context) {
@@ -85,17 +94,36 @@ class ReminderSection extends StatelessWidget {
                 onChanged: onReminderToggle,
               ),
             ),
-            if (hasReminder) ...[
+            if (hasReminder) ...[ 
               FormRowWithIcon(
-                icon: CupertinoIcons.calendar,
-                label: 'Date',
+                icon: CupertinoIcons.repeat,
+                label: 'Repeat',
                 context: context,
-                child: SelectButton(
-                  text: _formatDate(),
-                  color: AppColorScheme.accent(theme, context),
-                  onPressed: () => _showDatePicker(context),
+                child: CustomSwitch(
+                  value: isRepeating,
+                  onChanged: onRepeatToggle,
                 ),
               ),
+              if (isRepeating) ...[
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: RepeatDaySelector(
+                    selectedDays: repeatDays,
+                    onDayToggle: onDayToggle,
+                  ),
+                ),
+              ] else ...[
+                FormRowWithIcon(
+                  icon: CupertinoIcons.calendar,
+                  label: 'Date',
+                  context: context,
+                  child: SelectButton(
+                    text: _formatDate(),
+                    color: AppColorScheme.accent(theme, context),
+                    onPressed: () => _showDatePicker(context),
+                  ),
+                ),
+              ],
               FormRowWithIcon(
                 icon: CupertinoIcons.time,
                 label: 'Time',

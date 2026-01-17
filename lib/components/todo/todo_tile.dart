@@ -23,7 +23,45 @@ class TodoTile extends StatelessWidget {
     this.isSelectionMode = false,
   });
 
+  String _formatRepeatDays() {
+    if (todo.repeatDays.isEmpty) return '';
+
+    if (todo.repeatDays.length == 7) return 'Weekly';
+
+    if (todo.repeatDays.length == 5 &&
+        todo.repeatDays.containsAll([1, 2, 3, 4, 5])) {
+      return 'Weekdays';
+    }
+
+    if (todo.repeatDays.length == 2 &&
+        todo.repeatDays.containsAll([6, 7])) {
+      return 'Weekends';
+    }
+
+    final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return todo.repeatDays.map((day) => dayNames[day - 1]).join(', ');
+  }
+
   String _formatReminder() {
+    if (todo.reminder == null && !todo.isRepeating) return '';
+
+    if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
+      final daysText = _formatRepeatDays();
+
+      if (todo.reminder != null) {
+        final hour =
+            todo.reminder!.hour == 0
+                ? 12
+                : todo.reminder!.hour > 12
+                ? todo.reminder!.hour - 12
+                : todo.reminder!.hour;
+        final minute = todo.reminder!.minute.toString().padLeft(2, '0');
+        final period = todo.reminder!.hour < 12 ? 'AM' : 'PM';
+        return '$daysText at $hour:$minute $period';
+      }
+      return daysText;
+    }
+
     if (todo.reminder == null) return '';
 
     final now = DateTime.now();
@@ -148,12 +186,14 @@ class TodoTile extends StatelessWidget {
                             ),
                           ),
                         ],
-                        if (todo.reminder != null) ...[
+                        if (todo.reminder != null || todo.isRepeating) ...[ 
                           const SizedBox(height: 4),
                           Row(
                             children: [
                               Icon(
-                                CupertinoIcons.bell,
+                                todo.isRepeating 
+                                    ? CupertinoIcons.repeat 
+                                    : CupertinoIcons.bell,
                                 size: 14,
                                 color: AppColorScheme.accent(theme, context),
                               ),

@@ -26,6 +26,8 @@ class _TodoSheetState extends State<TodoSheet> {
   bool _hasReminder = false;
   DateTime? _selectedDate;
   DateTime? _selectedTime;
+  bool _isRepeating = false;
+  Set<int> _repeatDays = {};
   bool _isSaving = false;
 
   @override
@@ -35,7 +37,9 @@ class _TodoSheetState extends State<TodoSheet> {
     if (widget.todo != null) {
       _nameController.text = widget.todo!.name;
       _descriptionController.text = widget.todo!.description ?? '';
-      _hasReminder = widget.todo!.reminder != null;
+      _hasReminder = widget.todo!.reminder != null || widget.todo!.isRepeating;
+      _isRepeating = widget.todo!.isRepeating;
+      _repeatDays = widget.todo!.repeatDays;
       if (widget.todo!.reminder != null) {
         _selectedDate = widget.todo!.reminder;
         _selectedTime = widget.todo!.reminder;
@@ -56,9 +60,22 @@ class _TodoSheetState extends State<TodoSheet> {
   }
 
   DateTime? _getCombinedDateTime() {
-    if (!_hasReminder || _selectedDate == null || _selectedTime == null) {
+    if (!_hasReminder || _selectedTime == null) {
       return null;
     }
+
+    if (_isRepeating) {
+      final now = DateTime.now();
+      return DateTime(
+        now.year,
+        now.month,
+        now.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+    }
+
+    if (_selectedDate == null) return null;
 
     return DateTime(
       _selectedDate!.year,
@@ -83,6 +100,8 @@ class _TodoSheetState extends State<TodoSheet> {
               : _descriptionController.text.trim(),
       reminder: _getCombinedDateTime(),
       completed: widget.todo?.completed ?? false,
+      isRepeating: _isRepeating,
+      repeatDays: _isRepeating ? _repeatDays : {},
     );
 
     try {
@@ -145,9 +164,15 @@ class _TodoSheetState extends State<TodoSheet> {
                         hasReminder: _hasReminder,
                         selectedDate: _selectedDate,
                         selectedTime: _selectedTime,
+                        isRepeating: _isRepeating,
+                        repeatDays: _repeatDays,
                         onReminderToggle: (value) {
                           setState(() {
                             _hasReminder = value;
+                            if (!value) {
+                              _isRepeating = false;
+                              _repeatDays = {};
+                            }
                             if (value && _selectedDate == null) {
                               _selectedDate = DateTime.now();
                             }
@@ -167,6 +192,26 @@ class _TodoSheetState extends State<TodoSheet> {
                             (date) => setState(() => _selectedDate = date),
                         onTimeChanged:
                             (time) => setState(() => _selectedTime = time),
+                        onRepeatToggle: (value) {
+                          setState(() {
+                            _isRepeating = value;
+                            if (!value) {
+                              _repeatDays = {};
+                              if (_selectedDate == null) {
+                                _selectedDate = DateTime.now();
+                              }
+                            }
+                          });
+                        },
+                        onDayToggle: (day) {
+                          setState(() {
+                            if (_repeatDays.contains(day)) {
+                              _repeatDays.remove(day);
+                            } else {
+                              _repeatDays.add(day);
+                            }
+                          });
+                        },
                       ),
                     ],
                   ),

@@ -34,7 +34,9 @@ class DatabaseHelper {
         reminder INTEGER,
         completed INTEGER NOT NULL DEFAULT 0,
         sort_order INTEGER NOT NULL DEFAULT 0,
-        is_deleted INTEGER NOT NULL DEFAULT 0
+        is_deleted INTEGER NOT NULL DEFAULT 0,
+        is_repeating INTEGER NOT NULL DEFAULT 0,
+        repeat_days TEXT
       )
     ''');
   }
@@ -50,6 +52,16 @@ class DatabaseHelper {
     if (!columnNames.contains('is_deleted')) {
       await db.execute(
         'ALTER TABLE todos ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (!columnNames.contains('is_repeating')) {
+      await db.execute(
+        'ALTER TABLE todos ADD COLUMN is_repeating INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (!columnNames.contains('repeat_days')) {
+      await db.execute(
+        'ALTER TABLE todos ADD COLUMN repeat_days TEXT',
       );
     }
   }

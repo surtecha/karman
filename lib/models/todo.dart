@@ -7,6 +7,8 @@ class Todo {
   final bool pendingCompletion;
   final int sortOrder;
   final bool isDeleted;
+  final bool isRepeating;
+  final Set<int> repeatDays;
 
   Todo({
     this.id,
@@ -17,6 +19,8 @@ class Todo {
     this.pendingCompletion = false,
     this.sortOrder = 0,
     this.isDeleted = false,
+    this.isRepeating = false,
+    this.repeatDays = const {},
   });
 
   Map<String, dynamic> toMap() {
@@ -28,6 +32,8 @@ class Todo {
       'completed': completed ? 1 : 0,
       'sort_order': sortOrder,
       'is_deleted': isDeleted ? 1 : 0,
+      'is_repeating': isRepeating ? 1 : 0,
+      'repeat_days': repeatDays.isEmpty ? null : repeatDays.join(','),
     };
   }
 
@@ -43,6 +49,10 @@ class Todo {
       completed: map['completed'] == 1,
       sortOrder: map['sort_order'] ?? 0,
       isDeleted: map['is_deleted'] == 1,
+      isRepeating: map['is_repeating'] == 1,
+      repeatDays: map['repeat_days'] != null
+          ? (map['repeat_days'] as String).split(',').map(int.parse).toSet()
+          : {},
     );
   }
 
@@ -55,6 +65,8 @@ class Todo {
     bool? pendingCompletion,
     int? sortOrder,
     bool? isDeleted,
+    bool? isRepeating,
+    Set<int>? repeatDays,
   }) {
     return Todo(
       id: id ?? this.id,
@@ -65,6 +77,8 @@ class Todo {
       pendingCompletion: pendingCompletion ?? this.pendingCompletion,
       sortOrder: sortOrder ?? this.sortOrder,
       isDeleted: isDeleted ?? this.isDeleted,
+      isRepeating: isRepeating ?? this.isRepeating,
+      repeatDays: repeatDays ?? this.repeatDays,
     );
   }
 

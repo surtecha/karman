@@ -22,10 +22,16 @@ class TodoProvider extends ChangeNotifier {
 
   List<Todo> get todayTodos =>
       _todos.where((todo) {
-          if ((todo.completed && !todo.pendingCompletion) ||
-              todo.reminder == null) {
-            return false;
+          if (todo.completed && !todo.pendingCompletion) return false;
+
+          if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
+            final now = DateTime.now();
+            final currentWeekday = now.weekday;
+            return todo.repeatDays.contains(currentWeekday);
           }
+
+          if (todo.reminder == null) return false;
+
           final now = DateTime.now();
           final tomorrow = DateTime(now.year, now.month, now.day + 1);
           final reminderDate = DateTime(
@@ -39,9 +45,16 @@ class TodoProvider extends ChangeNotifier {
 
   List<Todo> get scheduledTodos =>
       _todos.where((todo) {
-          if ((todo.completed && !todo.pendingCompletion) ||
-              todo.reminder == null)
-            return false;
+          if (todo.completed && !todo.pendingCompletion) return false;
+
+          if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
+            final now = DateTime.now();
+            final currentWeekday = now.weekday;
+            return !todo.repeatDays.contains(currentWeekday);
+          }
+
+          if (todo.reminder == null) return false;
+
           final now = DateTime.now();
           final tomorrow = DateTime(now.year, now.month, now.day + 1);
           final reminderDate = DateTime(
@@ -58,6 +71,7 @@ class TodoProvider extends ChangeNotifier {
           .where(
             (todo) =>
                 !(todo.completed && !todo.pendingCompletion) &&
+                !todo.isRepeating &&
                 todo.reminder == null,
           )
           .toList()
@@ -208,6 +222,16 @@ class TodoProvider extends ChangeNotifier {
         _todos[currentIndex] = completedTodo;
         await _repository.updateTodo(completedTodo);
         _completionTimers.remove(todo.id!);
+
+        if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
+          final newTodo = todo.copyWith(
+            id: null,
+            completed: false,
+            pendingCompletion: false,
+          );
+          await addTodo(newTodo);
+        }
+
         notifyListeners();
       });
     } else {
