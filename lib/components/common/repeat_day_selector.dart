@@ -20,7 +20,6 @@ class RepeatDaySelector extends StatelessWidget {
     return Consumer<ThemeProvider>(
       builder: (context, theme, child) {
         final accentColor = AppColorScheme.accent(theme, context);
-        final textPrimary = AppColorScheme.textPrimary(theme);
         final textSecondary = AppColorScheme.textSecondary(theme);
         final bgPrimary = AppColorScheme.backgroundPrimary(theme);
         final bgSecondary = AppColorScheme.backgroundSecondary(theme);
