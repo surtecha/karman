@@ -5,8 +5,13 @@ import 'package:provider/provider.dart';
 
 class CustomFloatingActionButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final Color? color;
 
-  const CustomFloatingActionButton({super.key, required this.onPressed});
+  const CustomFloatingActionButton({
+    super.key,
+    required this.onPressed,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,13 +23,12 @@ class CustomFloatingActionButton extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: AppColorScheme.accent(theme, context),
+              color: color ?? AppColorScheme.accent(theme, context),
               shape: BoxShape.circle,
             ),
             child: Icon(
               CupertinoIcons.add,
-              color:
-                  theme.isDark ? CupertinoColors.black : CupertinoColors.white,
+              color: theme.isDark ? CupertinoColors.black : CupertinoColors.white,
               size: 24,
             ),
           ),
