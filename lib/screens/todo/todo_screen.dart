@@ -60,6 +60,12 @@ class _TodoScreenState extends State<TodoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pillColors = [
+      AppColorScheme.accentColors['green']!.resolveFrom(context),
+      AppColorScheme.accentColors['orange']!.resolveFrom(context),
+      AppColorScheme.accentColors['red']!.resolveFrom(context),
+    ];
+
     return Consumer2<ThemeProvider, TodoProvider>(
       builder: (context, theme, todoProvider, child) {
         return CupertinoPageScaffold(
@@ -131,11 +137,7 @@ class _TodoScreenState extends State<TodoScreen> {
                               todoProvider.mediumPriorityTodos.length,
                               todoProvider.highPriorityTodos.length,
                             ],
-                            colors: [
-                              AppColorScheme.accentColors['green']!.resolveFrom(context),
-                              AppColorScheme.accentColors['orange']!.resolveFrom(context),
-                              AppColorScheme.destructive(context),
-                            ],
+                            colors: pillColors,
                             onSelectionChanged: todoProvider.setSelectedIndex,
                             initialSelection: todoProvider.selectedIndex,
                           ),
@@ -179,6 +181,7 @@ class _TodoScreenState extends State<TodoScreen> {
                         right: constraints.maxWidth < 350 ? 16 : 20,
                         child: CustomFloatingActionButton(
                           onPressed: () => _openTodoSheet(context),
+                          color: pillColors[todoProvider.selectedIndex],
                         ),
                       ),
                   ],
