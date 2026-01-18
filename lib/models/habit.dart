@@ -62,24 +62,19 @@ class Habit {
       lastCompletionDate!.day,
     );
     
-    // For custom repetition, check if any scheduled days were missed
     if (customReminder && reminderDays.isNotEmpty) {
       DateTime checkDate = lastCompletion.add(const Duration(days: 1));
       
       while (checkDate.isBefore(today) || checkDate == today) {
         if (reminderDays.contains(checkDate.weekday)) {
-          // Found a scheduled day between last completion and today
-          // Streak is active only if this is today (no missed days)
           return checkDate == today;
         }
         checkDate = checkDate.add(const Duration(days: 1));
       }
       
-      // No scheduled days between last completion and today
       return true;
     }
     
-    // For daily habits, streak is active if completed today or yesterday
     final daysDifference = today.difference(lastCompletion).inDays;
     return daysDifference <= 1;
   }
