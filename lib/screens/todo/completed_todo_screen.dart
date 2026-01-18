@@ -40,8 +40,8 @@ class CompletedTodosScreen extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     onPressed: () => _handleDeleteAll(context, todoProvider),
                     child: Icon(
-                      CupertinoIcons.trash,
-                      size: 28,
+                      CupertinoIcons.trash_circle,
+                      size: 32,
                       color: AppColorScheme.destructive(context),
                     ),
                   )
