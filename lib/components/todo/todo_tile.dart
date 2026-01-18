@@ -122,7 +122,7 @@ class TodoTile extends StatelessWidget {
       case 1:
         return AppColorScheme.accentColors['orange']!.resolveFrom(context);
       case 2:
-        return AppColorScheme.destructive(context);
+        return AppColorScheme.accentColors['red']!.resolveFrom(context);
       default:
         return AppColorScheme.accentColors['orange']!.resolveFrom(context);
     }
