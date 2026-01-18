@@ -39,6 +39,22 @@ class DatabaseHelper {
         repeat_days TEXT
       )
     ''');
+    
+    await db.execute('''
+      CREATE TABLE habits(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        description TEXT,
+        reminder INTEGER NOT NULL,
+        custom_reminder INTEGER NOT NULL DEFAULT 0,
+        reminder_days TEXT,
+        current_streak INTEGER NOT NULL DEFAULT 0,
+        max_streak INTEGER NOT NULL DEFAULT 0,
+        last_completion_date INTEGER,
+        created_at INTEGER NOT NULL,
+        sort_order INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
   }
 
   Future<void> _onOpen(Database db) async {
@@ -68,6 +84,25 @@ class DatabaseHelper {
       await db.execute(
         'ALTER TABLE todos ADD COLUMN priority INTEGER NOT NULL DEFAULT 1',
       );
+    }
+    
+    final habitColumns = await db.rawQuery('PRAGMA table_info(habits)');
+    if (habitColumns.isEmpty) {
+      await db.execute('''
+        CREATE TABLE habits(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          reminder INTEGER NOT NULL,
+          custom_reminder INTEGER NOT NULL DEFAULT 0,
+          reminder_days TEXT,
+          current_streak INTEGER NOT NULL DEFAULT 0,
+          max_streak INTEGER NOT NULL DEFAULT 0,
+          last_completion_date INTEGER,
+          created_at INTEGER NOT NULL,
+          sort_order INTEGER NOT NULL DEFAULT 0
+        )
+      ''');
     }
   }
 

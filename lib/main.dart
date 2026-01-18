@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'navigation_wrapper.dart';
 import 'theme/theme_provider.dart';
 import 'providers/todo_provider.dart';
+import 'providers/habit_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,7 @@ class _KarmanState extends State<Karman> with WidgetsBindingObserver {
       providers: [
         ChangeNotifierProvider.value(value: widget.themeProvider),
         ChangeNotifierProvider(create: (_) => TodoProvider()),
+        ChangeNotifierProvider(create: (_) => HabitProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, theme, _) {
