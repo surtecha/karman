@@ -20,7 +20,6 @@ class PrioritySelector extends StatelessWidget {
         final bgPrimary = AppColorScheme.backgroundPrimary(theme);
         final bgSecondary = AppColorScheme.backgroundSecondary(theme);
         final textPrimary = AppColorScheme.textPrimary(theme);
-        final textSecondary = AppColorScheme.textSecondary(theme);
 
         return CupertinoFormSection.insetGrouped(
           backgroundColor: bgSecondary,
