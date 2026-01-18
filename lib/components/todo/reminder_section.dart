@@ -3,7 +3,7 @@ import 'package:karman/theme/color_scheme.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:karman/components/common/custom_cupertino_switch.dart';
-import 'package:karman/components/common/datetime_picker.dart';
+import 'package:karman/components/common/datetime_picker_modal.dart';
 import 'package:karman/components/common/form_row_with_icon.dart';
 import 'package:karman/components/common/select_button.dart';
 import 'package:karman/components/common/repeat_day_selector.dart';
@@ -89,7 +89,7 @@ class ReminderSection extends StatelessWidget {
               icon: CupertinoIcons.bell,
               label: 'Reminder',
               context: context,
-              child: CustomSwitch(
+              child: CustomCupertinoSwitch(
                 value: hasReminder,
                 onChanged: onReminderToggle,
               ),
@@ -99,7 +99,7 @@ class ReminderSection extends StatelessWidget {
                 icon: CupertinoIcons.repeat,
                 label: 'Repeat',
                 context: context,
-                child: CustomSwitch(
+                child: CustomCupertinoSwitch(
                   value: isRepeating,
                   onChanged: onRepeatToggle,
                 ),

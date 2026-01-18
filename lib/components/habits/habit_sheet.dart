@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:karman/components/common/nav_button.dart';
 import 'package:karman/components/todo/name_description_section.dart';
-import 'package:karman/components/common/datetime_picker.dart';
+import 'package:karman/components/common/datetime_picker_modal.dart';
 import 'package:karman/components/common/custom_cupertino_switch.dart';
 import 'package:karman/components/common/select_button.dart';
 import 'package:karman/components/common/form_row_with_icon.dart';
@@ -198,7 +198,7 @@ class _HabitSheetState extends State<HabitSheet> {
                             icon: CupertinoIcons.repeat,
                             label: 'Custom Reminder',
                             context: context,
-                            child: CustomSwitch(
+                            child: CustomCupertinoSwitch(
                               value: _customReminder,
                               onChanged: (value) {
                                 setState(() {
