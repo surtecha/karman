@@ -25,35 +25,61 @@ class MultiSelector<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isActive) return const SizedBox.shrink();
-
     final theme = context.watch<ThemeProvider>();
     final textGenerator = selectionText ?? _defaultSelectionText;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: AppColorScheme.accent(theme, context).withOpacity(0.1),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            textGenerator(selectedItems.length),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColorScheme.accent(theme, context),
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        switchInCurve: Curves.easeOut,
+        switchOutCurve: Curves.easeIn,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, -1),
+              end: Offset.zero,
+            ).animate(animation),
+            child: FadeTransition(
+              opacity: animation,
+              child: child,
             ),
-          ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: onToggleMode,
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColorScheme.accent(theme, context)),
-            ),
-          ),
-        ],
+          );
+        },
+        child: isActive
+            ? Container(
+                key: const ValueKey('active'),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                color: AppColorScheme.accent(theme, context).withOpacity(0.1),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      textGenerator(selectedItems.length),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColorScheme.accent(theme, context),
+                      ),
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: onToggleMode,
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: AppColorScheme.accent(theme, context)),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : const SizedBox(
+                key: ValueKey('inactive'),
+                width: double.infinity,
+                height: 0,
+              ),
       ),
     );
   }
