@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:karman/components/common/context_menu.dart';
+import 'package:karman/components/common/multi_selector.dart';
 import 'package:karman/components/todo/delete_confirmation_dialog.dart';
+import 'package:karman/components/todo/todo_tile.dart';
 import 'package:karman/theme/color_scheme.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +24,20 @@ class _DeletedTodosScreenState extends State<DeletedTodosScreen> {
     });
   }
 
+  void _handleRestore(BuildContext context, TodoProvider todoProvider) async {
+    if (todoProvider.selectedDeletedTodoIds.isEmpty) return;
+    await todoProvider.restoreSelectedTodos();
+  }
+
+  void _handleDelete(BuildContext context, TodoProvider todoProvider) async {
+    if (todoProvider.selectedDeletedTodoIds.isEmpty) return;
+
+    DeleteConfirmationDialog.showPermanentDelete(
+      context,
+      onConfirm: () => todoProvider.permanentlyDeleteSelectedTodos(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<ThemeProvider, TodoProvider>(
@@ -37,102 +54,119 @@ class _DeletedTodosScreenState extends State<DeletedTodosScreen> {
                 color: AppColorScheme.accent(theme, context),
               ),
             ),
-          ),
-          child: SafeArea(
-            child:
-                todoProvider.deletedTodos.isEmpty
-                    ? const Center(
-                      child: Text(
-                        'No deleted todos',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: CupertinoColors.systemGrey,
+            trailing: !todoProvider.isDeletedSelectionMode
+                ? ContextMenu(
+                    alignment: Alignment.topRight,
+                    items: [
+                      ContextMenuItem(
+                        icon: CupertinoIcons.checkmark_circle,
+                        iconColor: AppColorScheme.accent(theme, context),
+                        label: 'Select',
+                        onTap: () => todoProvider.toggleDeletedSelectionMode(),
+                      ),
+                      ContextMenuItem(
+                        icon: CupertinoIcons.checkmark_alt_circle_fill,
+                        iconColor: AppColorScheme.accent(theme, context),
+                        label: 'Select All',
+                        onTap: () {
+                          todoProvider.toggleDeletedSelectionMode();
+                          for (var todo in todoProvider.deletedTodos) {
+                            if (!todoProvider.isDeletedTodoSelected(todo.id!)) {
+                              todoProvider.toggleDeletedTodoSelection(todo.id!);
+                            }
+                          }
+                        },
+                      ),
+                    ],
+                    child: Icon(
+                      CupertinoIcons.ellipsis_circle,
+                      size: 28,
+                      color: AppColorScheme.accent(theme, context),
+                    ),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: todoProvider.selectedDeletedTodoIds.isEmpty
+                            ? null
+                            : () => _handleRestore(context, todoProvider),
+                        child: Icon(
+                          CupertinoIcons.arrow_counterclockwise,
+                          size: 28,
+                          color: todoProvider.selectedDeletedTodoIds.isEmpty
+                              ? AppColorScheme.textSecondary(theme)
+                              : AppColorScheme.accent(theme, context),
                         ),
                       ),
-                    )
-                    : ListView.builder(
-                      itemCount: todoProvider.deletedTodos.length,
-                      itemBuilder: (context, index) {
-                        final todo = todoProvider.deletedTodos[index];
-                        return Container(
-                          color: AppColorScheme.backgroundPrimary(theme),
-                          child: CupertinoButton(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 16,
-                            ),
-                            onPressed: () {},
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        todo.name,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColorScheme.textPrimary(
-                                            theme,
-                                          ),
-                                        ),
-                                      ),
-                                      if (todo.description?.isNotEmpty ==
-                                          true) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          todo.description!,
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColorScheme.textSecondary(
-                                              theme,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () async {
-                                    await todoProvider.restoreTodo(todo.id!);
-                                  },
-                                  child: Icon(
-                                    CupertinoIcons.arrow_counterclockwise,
-                                    color: AppColorScheme.accent(
-                                      theme,
-                                      context,
-                                    ),
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () {
-                                    DeleteConfirmationDialog.showPermanentDelete(
-                                      context,
-                                      onConfirm:
-                                          () => todoProvider
-                                              .permanentlyDeleteTodo(todo.id!),
-                                    );
-                                  },
-                                  child: Icon(
-                                    CupertinoIcons.delete,
-                                    color: AppColorScheme.destructive(context),
-                                    size: 24,
-                                  ),
-                                ),
-                              ],
+                      const SizedBox(width: 8),
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: todoProvider.selectedDeletedTodoIds.isEmpty
+                            ? null
+                            : () => _handleDelete(context, todoProvider),
+                        child: Icon(
+                          CupertinoIcons.trash,
+                          size: 28,
+                          color: todoProvider.selectedDeletedTodoIds.isEmpty
+                              ? AppColorScheme.textSecondary(theme)
+                              : AppColorScheme.destructive(context),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                MultiSelector<int>(
+                  isActive: todoProvider.isDeletedSelectionMode,
+                  selectedItems: todoProvider.selectedDeletedTodoIds,
+                  onToggleMode: todoProvider.toggleDeletedSelectionMode,
+                  onDelete: () => _handleDelete(context, todoProvider),
+                ),
+                Expanded(
+                  child: todoProvider.deletedTodos.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No deleted todos',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: CupertinoColors.systemGrey,
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        )
+                      : ListView.builder(
+                          itemCount: todoProvider.deletedTodos.length,
+                          itemBuilder: (context, index) {
+                            final todo = todoProvider.deletedTodos[index];
+                            final isSelected = todoProvider.isDeletedTodoSelected(todo.id!);
+
+                            return TodoTile(
+                              todo: todo,
+                              onTap: () {
+                                if (todoProvider.isDeletedSelectionMode) {
+                                  todoProvider.toggleDeletedTodoSelection(todo.id!);
+                                }
+                              },
+                              onToggle: (completed) {
+                                if (todoProvider.isDeletedSelectionMode) {
+                                  todoProvider.toggleDeletedTodoSelection(todo.id!);
+                                }
+                              },
+                              onDelete: () {},
+                              isSelected: isSelected,
+                              isSelectionMode: todoProvider.isDeletedSelectionMode,
+                              showPriorityBorder: true,
+                              enableSwipeToDelete: false,
+                              showCompletionCheckbox: false,
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           ),
         );
       },

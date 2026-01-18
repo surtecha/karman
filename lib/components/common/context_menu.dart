@@ -22,12 +22,14 @@ class ContextMenu extends StatefulWidget {
   final Widget child;
   final List<ContextMenuItem> items;
   final Duration? actionDelay;
+  final Alignment alignment;
 
   const ContextMenu({
     super.key,
     required this.child,
     required this.items,
     this.actionDelay = const Duration(milliseconds: 250),
+    this.alignment = Alignment.topLeft,
   });
 
   @override
@@ -44,6 +46,7 @@ class _ContextMenuState extends State<ContextMenu> {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
     final Offset buttonPosition = button.localToGlobal(Offset.zero, ancestor: overlay);
     final Size buttonSize = button.size;
+    final bool isRightAligned = widget.alignment == Alignment.topRight;
 
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -58,7 +61,8 @@ class _ContextMenuState extends State<ContextMenu> {
           child: Stack(
             children: [
               Positioned(
-                left: buttonPosition.dx + buttonSize.width / 2,
+                left: isRightAligned ? null : buttonPosition.dx + buttonSize.width / 2,
+                right: isRightAligned ? overlay.size.width - buttonPosition.dx - buttonSize.width / 2 : null,
                 top: buttonPosition.dy + buttonSize.height / 2,
                 child: GestureDetector(
                   onTap: () {},
@@ -68,7 +72,7 @@ class _ContextMenuState extends State<ContextMenu> {
                       curve: Curves.easeOutCubic,
                       reverseCurve: Curves.easeInCubic,
                     ),
-                    alignment: Alignment.topLeft,
+                    alignment: isRightAligned ? Alignment.topRight : Alignment.topLeft,
                     child: FadeTransition(
                       opacity: CurvedAnimation(
                         parent: animation,
@@ -76,7 +80,7 @@ class _ContextMenuState extends State<ContextMenu> {
                         reverseCurve: Curves.easeIn,
                       ),
                       child: Transform.translate(
-                        offset: const Offset(-14, -14),
+                        offset: isRightAligned ? const Offset(14, -14) : const Offset(-14, -14),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(14),
                           child: BackdropFilter(

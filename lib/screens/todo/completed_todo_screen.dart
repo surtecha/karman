@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:karman/components/todo/delete_confirmation_dialog.dart';
 import 'package:karman/theme/color_scheme.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -8,15 +9,25 @@ import '../../providers/todo_provider.dart';
 class CompletedTodosScreen extends StatelessWidget {
   const CompletedTodosScreen({super.key});
 
+  void _handleDeleteAll(BuildContext context, TodoProvider todoProvider) {
+    DeleteConfirmationDialog.show(
+      context,
+      count: todoProvider.completedTodos.length,
+      onConfirm: () => todoProvider.deleteAllCompletedTodos(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer2<ThemeProvider, TodoProvider>(
       builder: (context, theme, todoProvider, child) {
+        final hasCompletedTodos = todoProvider.completedTodos.isNotEmpty;
+
         return CupertinoPageScaffold(
           backgroundColor: AppColorScheme.backgroundPrimary(theme),
           navigationBar: CupertinoNavigationBar(
             backgroundColor: AppColorScheme.backgroundPrimary(theme),
-            middle: Text('Completed'),
+            middle: const Text('Completed'),
             leading: GestureDetector(
               onTap: () => Navigator.of(context).pop(),
               child: Icon(
@@ -24,6 +35,17 @@ class CompletedTodosScreen extends StatelessWidget {
                 color: AppColorScheme.accent(theme, context),
               ),
             ),
+            trailing: hasCompletedTodos
+                ? CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => _handleDeleteAll(context, todoProvider),
+                    child: Icon(
+                      CupertinoIcons.trash,
+                      size: 28,
+                      color: AppColorScheme.destructive(context),
+                    ),
+                  )
+                : null,
           ),
           child: SafeArea(
             child:
@@ -38,6 +60,7 @@ class CompletedTodosScreen extends StatelessWidget {
                               (todo, completed) =>
                                   todoProvider.toggleTodo(todo),
                           onTodoDelete: (todo) => todoProvider.deleteTodo(todo),
+                          showPriorityBorder: true,
                         ),
                       ],
                     ),

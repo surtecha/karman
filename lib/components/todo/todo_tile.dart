@@ -12,6 +12,9 @@ class TodoTile extends StatelessWidget {
   final VoidCallback onDelete;
   final bool isSelected;
   final bool isSelectionMode;
+  final bool showPriorityBorder;
+  final bool enableSwipeToDelete;
+  final bool showCompletionCheckbox;
 
   const TodoTile({
     super.key,
@@ -21,6 +24,9 @@ class TodoTile extends StatelessWidget {
     required this.onDelete,
     this.isSelected = false,
     this.isSelectionMode = false,
+    this.showPriorityBorder = false,
+    this.enableSwipeToDelete = true,
+    this.showCompletionCheckbox = true,
   });
 
   String _formatRepeatDays() {
@@ -109,6 +115,19 @@ class TodoTile extends StatelessWidget {
     return DateTime.now().isAfter(todo.reminder!);
   }
 
+  Color _getPriorityColor(BuildContext context, ThemeProvider theme) {
+    switch (todo.priority) {
+      case 0:
+        return AppColorScheme.accentColors['green']!.resolveFrom(context);
+      case 1:
+        return AppColorScheme.accentColors['orange']!.resolveFrom(context);
+      case 2:
+        return AppColorScheme.destructive(context);
+      default:
+        return AppColorScheme.accentColors['orange']!.resolveFrom(context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
@@ -116,7 +135,7 @@ class TodoTile extends StatelessWidget {
         return Dismissible(
           key: Key('${todo.id}_dismissible'),
           direction:
-              isSelectionMode
+              !enableSwipeToDelete || isSelectionMode
                   ? DismissDirection.none
                   : DismissDirection.endToStart,
           onDismissed: (_) {
@@ -134,50 +153,74 @@ class TodoTile extends StatelessWidget {
             ),
           ),
           child: Container(
-            color:
-                isSelected
-                    ? AppColorScheme.accent(theme, context).withOpacity(0.1)
-                    : AppColorScheme.backgroundPrimary(theme),
+            decoration: BoxDecoration(
+              color:
+                  isSelected
+                      ? AppColorScheme.accent(theme, context).withOpacity(0.1)
+                      : AppColorScheme.backgroundPrimary(theme),
+              border: showPriorityBorder
+                  ? Border(
+                      left: BorderSide(
+                        color: _getPriorityColor(context, theme),
+                        width: 4,
+                      ),
+                    )
+                  : null,
+            ),
             child: CupertinoButton(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               onPressed: isSelectionMode ? () => onToggle(null) : onTap,
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => onToggle(!todo.isVisuallyCompleted),
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
+                  if (showCompletionCheckbox) ...[
+                    GestureDetector(
+                      onTap: () => onToggle(!todo.isVisuallyCompleted),
+                      child: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color:
+                                isSelectionMode && isSelected
+                                    ? AppColorScheme.accent(theme, context)
+                                    : todo.isVisuallyCompleted
+                                    ? AppColorScheme.accent(theme, context)
+                                    : AppColorScheme.textSecondary(theme),
+                            width: 2,
+                          ),
                           color:
                               isSelectionMode && isSelected
                                   ? AppColorScheme.accent(theme, context)
                                   : todo.isVisuallyCompleted
                                   ? AppColorScheme.accent(theme, context)
-                                  : AppColorScheme.textSecondary(theme),
-                          width: 2,
+                                  : null,
                         ),
-                        color:
-                            isSelectionMode && isSelected
-                                ? AppColorScheme.accent(theme, context)
-                                : todo.isVisuallyCompleted
-                                ? AppColorScheme.accent(theme, context)
+                        child:
+                            (isSelectionMode && isSelected) ||
+                                    todo.isVisuallyCompleted
+                                ? Icon(
+                                  CupertinoIcons.checkmark,
+                                  size: 16,
+                                  color: AppColorScheme.backgroundPrimary(theme),
+                                )
                                 : null,
                       ),
-                      child:
-                          (isSelectionMode && isSelected) ||
-                                  todo.isVisuallyCompleted
-                              ? Icon(
-                                CupertinoIcons.checkmark,
-                                size: 16,
-                                color: AppColorScheme.backgroundPrimary(theme),
-                              )
-                              : null,
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
+                  ],
+                  if (!showCompletionCheckbox && isSelectionMode) ...[
+                    Icon(
+                      isSelected
+                          ? CupertinoIcons.checkmark_circle_fill
+                          : CupertinoIcons.circle,
+                      color: isSelected
+                          ? AppColorScheme.accent(theme, context)
+                          : AppColorScheme.textSecondary(theme),
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,

@@ -15,6 +15,7 @@ class TodoList extends StatelessWidget {
   final Function(Todo, bool) onTodoToggle;
   final Function(Todo) onTodoDelete;
   final Function(int, int)? onReorder;
+  final bool showPriorityBorder;
 
   const TodoList({
     super.key,
@@ -23,6 +24,7 @@ class TodoList extends StatelessWidget {
     required this.onTodoToggle,
     required this.onTodoDelete,
     this.onReorder,
+    this.showPriorityBorder = false,
   });
 
   @override
@@ -71,6 +73,7 @@ class TodoList extends StatelessWidget {
                       onDelete: () => onTodoDelete(todo),
                       isSelected: todoProvider.isTodoSelected(todo.id!),
                       isSelectionMode: todoProvider.isSelectionMode,
+                      showPriorityBorder: showPriorityBorder,
                     ),
                   );
                 },

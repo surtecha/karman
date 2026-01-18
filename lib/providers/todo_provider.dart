@@ -12,6 +12,8 @@ class TodoProvider extends ChangeNotifier {
   final Map<int, Timer> _completionTimers = {};
   bool _isSelectionMode = false;
   final Set<int> _selectedTodoIds = {};
+  bool _isDeletedSelectionMode = false;
+  final Set<int> _selectedDeletedTodoIds = {};
 
   List<Todo> get todos => _todos;
   List<Todo> get deletedTodos => _deletedTodos;
@@ -19,6 +21,8 @@ class TodoProvider extends ChangeNotifier {
   int get selectedIndex => _selectedIndex;
   bool get isSelectionMode => _isSelectionMode;
   Set<int> get selectedTodoIds => _selectedTodoIds;
+  bool get isDeletedSelectionMode => _isDeletedSelectionMode;
+  Set<int> get selectedDeletedTodoIds => _selectedDeletedTodoIds;
 
   List<Todo> get lowPriorityTodos =>
       _todos
@@ -93,6 +97,69 @@ class TodoProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error deleting selected todos: $e');
+    }
+  }
+
+  void toggleDeletedSelectionMode() {
+    _isDeletedSelectionMode = !_isDeletedSelectionMode;
+    if (!_isDeletedSelectionMode) {
+      _selectedDeletedTodoIds.clear();
+    }
+    notifyListeners();
+  }
+
+  void toggleDeletedTodoSelection(int todoId) {
+    if (_selectedDeletedTodoIds.contains(todoId)) {
+      _selectedDeletedTodoIds.remove(todoId);
+    } else {
+      _selectedDeletedTodoIds.add(todoId);
+    }
+    notifyListeners();
+  }
+
+  bool isDeletedTodoSelected(int todoId) {
+    return _selectedDeletedTodoIds.contains(todoId);
+  }
+
+  Future<void> restoreSelectedTodos() async {
+    try {
+      for (final todoId in _selectedDeletedTodoIds) {
+        await _repository.restoreTodo(todoId);
+      }
+      await loadTodos();
+      await loadDeletedTodos();
+      _selectedDeletedTodoIds.clear();
+      _isDeletedSelectionMode = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error restoring selected todos: $e');
+    }
+  }
+
+  Future<void> permanentlyDeleteSelectedTodos() async {
+    try {
+      for (final todoId in _selectedDeletedTodoIds) {
+        await _repository.deleteTodo(todoId);
+      }
+      await loadDeletedTodos();
+      _selectedDeletedTodoIds.clear();
+      _isDeletedSelectionMode = false;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error permanently deleting selected todos: $e');
+    }
+  }
+
+  Future<void> deleteAllCompletedTodos() async {
+    try {
+      for (final todo in completedTodos) {
+        await _repository.softDeleteTodo(todo.id!);
+      }
+      await loadTodos();
+      await loadDeletedTodos();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error deleting all completed todos: $e');
     }
   }
 
