@@ -95,5 +95,6 @@ class AppColorScheme {
     'yellow': CupertinoColors.systemYellow,
     'orange': CupertinoColors.systemOrange,
     'pink': CupertinoColors.systemPink,
+    'red': CupertinoColors.systemRed,
   };
 }
