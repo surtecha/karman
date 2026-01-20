@@ -63,7 +63,7 @@ class _HabitCompletionOverlayState extends State<HabitCompletionOverlay> with Ti
 
   String _getStreakMessage() {
     final streak = widget.habit.currentStreak;
-    if (streak == 0) return 'Tap and hold start your journey';
+    if (streak == 0) return 'Tap and hold to get started';
     if (streak < 7) return 'Building momentum';
     if (streak < 30) return 'Strong consistency';
     if (streak < 100) return 'Incredible dedication';
@@ -92,14 +92,6 @@ class _HabitCompletionOverlayState extends State<HabitCompletionOverlay> with Ti
     if (mounted) Navigator.of(context).pop();
   }
 
-  void _startHold() {
-    _circleKey.currentState?.startHold();
-  }
-
-  void _endHold() {
-    _circleKey.currentState?.endHold();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
@@ -111,56 +103,55 @@ class _HabitCompletionOverlayState extends State<HabitCompletionOverlay> with Ti
               opacity: _fadeAnimation.value,
               child: Transform.scale(
                 scale: _scaleAnimation.value,
-                child: Container(
-                  width: 340,
-                  padding: const EdgeInsets.all(40),
-                  decoration: BoxDecoration(
-                    color: AppColorScheme.backgroundPrimary(theme),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(
-                      color: AppColorScheme.surfaceElevated(theme),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: CupertinoColors.black.withOpacity(0.3),
-                        blurRadius: 40,
-                        offset: const Offset(0, 20),
+                child: GestureDetector(
+                  onTapDown: (_) => _circleKey.currentState?.startHold(),
+                  onTapUp: (_) => _circleKey.currentState?.endHold(),
+                  onTapCancel: () => _circleKey.currentState?.endHold(),
+                  child: Container(
+                    width: 340,
+                    padding: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: AppColorScheme.backgroundPrimary(theme),
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(
+                        color: AppColorScheme.surfaceElevated(theme),
+                        width: 1.5,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        widget.habit.name,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: AppColorScheme.textPrimary(theme),
+                      boxShadow: [
+                        BoxShadow(
+                          color: CupertinoColors.black.withOpacity(0.3),
+                          blurRadius: 40,
+                          offset: const Offset(0, 20),
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      CompletionCircle(
-                        key: _circleKey,
-                        currentStreak: _displayStreak,
-                        onComplete: _handleComplete,
-                        isCompleting: _isCompleting,
-                        completeProgress: _completeController.value,
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      GestureDetector(
-                        onTapDown: (_) => _startHold(),
-                        onTapUp: (_) => _endHold(),
-                        onTapCancel: _endHold,
-                        child: Container(
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.habit.name,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: AppColorScheme.textPrimary(theme),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        CompletionCircle(
+                          key: _circleKey,
+                          currentStreak: _displayStreak,
+                          onComplete: _handleComplete,
+                          isCompleting: _isCompleting,
+                          completeProgress: _completeController.value,
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        Container(
                           height: 48,
-                          color: CupertinoColors.transparent,
                           alignment: Alignment.center,
                           child: Text(
                             _getStreakMessage(),
@@ -173,8 +164,8 @@ class _HabitCompletionOverlayState extends State<HabitCompletionOverlay> with Ti
                             textAlign: TextAlign.center,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

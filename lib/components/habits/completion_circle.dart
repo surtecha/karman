@@ -135,74 +135,69 @@ class CompletionCircleState extends State<CompletionCircle> with TickerProviderS
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            GestureDetector(
-              onTapDown: (_) => startHold(),
-              onTapUp: (_) => endHold(),
-              onTapCancel: endHold,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  AnimatedBuilder(
-                    animation: _pulseController,
-                    builder: (context, child) {
-                      final pulseOpacity = (math.sin(_pulseController.value * 2 * math.pi) + 1) / 2 * 0.15;
-                      return CustomPaint(
-                        size: const Size(260, 260),
-                        painter: CircleProgressPainter(
-                          progress: _holdProgress,
-                          completeProgress: widget.completeProgress,
-                          color: accentColor,
-                          backgroundColor: AppColorScheme.surfaceElevated(theme),
-                          isCompleting: widget.isCompleting,
-                          pulseOpacity: pulseOpacity,
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  AnimatedScale(
-                    scale: _isHolding ? 0.96 : 1.0,
-                    duration: const Duration(milliseconds: 100),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 400),
-                          transitionBuilder: (child, animation) {
-                            return ScaleTransition(
-                              scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
-                              child: FadeTransition(opacity: animation, child: child),
-                            );
-                          },
-                          child: Text(
-                            '${widget.currentStreak}',
-                            key: ValueKey(widget.currentStreak),
-                            style: TextStyle(
-                              fontSize: 80,
-                              fontWeight: FontWeight.w700,
-                              color: AppColorScheme.textPrimary(theme),
-                              height: 1,
-                              letterSpacing: -2,
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 4),
-                        
-                        Text(
-                          widget.currentStreak == 1 ? 'day' : 'days',
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                AnimatedBuilder(
+                  animation: _pulseController,
+                  builder: (context, child) {
+                    final pulseOpacity = _isHolding ? 0.0 : (math.sin(_pulseController.value * 2 * math.pi) + 1) / 2 * 0.15;
+                    return CustomPaint(
+                      size: const Size(260, 260),
+                      painter: CircleProgressPainter(
+                        progress: _holdProgress,
+                        completeProgress: widget.completeProgress,
+                        color: accentColor,
+                        backgroundColor: AppColorScheme.surfaceElevated(theme),
+                        isCompleting: widget.isCompleting,
+                        pulseOpacity: pulseOpacity,
+                      ),
+                    );
+                  },
+                ),
+                
+                AnimatedScale(
+                  scale: _isHolding ? 0.96 : 1.0,
+                  duration: const Duration(milliseconds: 100),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 400),
+                        transitionBuilder: (child, animation) {
+                          return ScaleTransition(
+                            scale: Tween<double>(begin: 0.8, end: 1.0).animate(animation),
+                            child: FadeTransition(opacity: animation, child: child),
+                          );
+                        },
+                        child: Text(
+                          '${widget.currentStreak}',
+                          key: ValueKey(widget.currentStreak),
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: AppColorScheme.textSecondary(theme),
-                            letterSpacing: 1.5,
+                            fontSize: 80,
+                            fontWeight: FontWeight.w700,
+                            color: AppColorScheme.textPrimary(theme),
+                            height: 1,
+                            letterSpacing: -2,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      
+                      const SizedBox(height: 4),
+                      
+                      Text(
+                        widget.currentStreak == 1 ? 'day' : 'days',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: AppColorScheme.textSecondary(theme),
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         );
@@ -236,7 +231,7 @@ class CircleProgressPainter extends CustomPainter {
     final backgroundPaint = Paint()
       ..color = backgroundColor
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
+      ..strokeWidth = 10;
 
     canvas.drawCircle(center, radius, backgroundPaint);
 
@@ -244,7 +239,7 @@ class CircleProgressPainter extends CustomPainter {
       final pulsePaint = Paint()
         ..color = color.withOpacity(pulseOpacity)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3;
+        ..strokeWidth = 15;
       canvas.drawCircle(center, radius, pulsePaint);
     }
 
@@ -254,7 +249,7 @@ class CircleProgressPainter extends CustomPainter {
       final progressPaint = Paint()
         ..color = color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.5
+        ..strokeWidth = 10.5
         ..strokeCap = StrokeCap.round;
 
       final progressPath = Path()
@@ -269,7 +264,7 @@ class CircleProgressPainter extends CustomPainter {
       final glowPaint = Paint()
         ..color = color.withOpacity(0.4)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 10
+        ..strokeWidth = 20
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
       canvas.drawPath(progressPath, glowPaint);
