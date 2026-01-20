@@ -26,19 +26,12 @@ class Habit {
   }) : createdAt = createdAt ?? DateTime.now();
 
   bool get isScheduledForToday {
-    final now = DateTime.now();
-    final currentWeekday = now.weekday;
-    
-    if (!customReminder) {
-      return true;
-    }
-    
-    return reminderDays.contains(currentWeekday);
+    if (!customReminder) return true;
+    return reminderDays.contains(DateTime.now().weekday);
   }
 
   bool get isCompletedToday {
     if (lastCompletionDate == null) return false;
-    
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final completionDay = DateTime(
@@ -46,14 +39,21 @@ class Habit {
       lastCompletionDate!.month,
       lastCompletionDate!.day,
     );
-    
     return completionDay == today;
   }
 
-  bool get isStreakActive {
-    if (currentStreak == 0) return false;
-    if (lastCompletionDate == null) return false;
-    
+  bool get isStreakActive => currentStreak > 0;
+
+  int _getGracePeriod() {
+    if (currentStreak >= 30) return 3;
+    if (currentStreak >= 7) return 1;
+    return 0;
+  }
+
+  bool shouldResetStreak() {
+    if (lastCompletionDate == null || currentStreak == 0) return false;
+    if (isCompletedToday) return false;
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final lastCompletion = DateTime(
@@ -61,22 +61,23 @@ class Habit {
       lastCompletionDate!.month,
       lastCompletionDate!.day,
     );
-    
+
     if (customReminder && reminderDays.isNotEmpty) {
       DateTime checkDate = lastCompletion.add(const Duration(days: 1));
-      
-      while (checkDate.isBefore(today) || checkDate == today) {
+      int missedCount = 0;
+
+      while (checkDate.isBefore(today)) {
         if (reminderDays.contains(checkDate.weekday)) {
-          return checkDate == today;
+          missedCount++;
+          if (missedCount > _getGracePeriod()) return true;
         }
         checkDate = checkDate.add(const Duration(days: 1));
       }
-      
-      return true;
+      return false;
     }
-    
-    final daysDifference = today.difference(lastCompletion).inDays;
-    return daysDifference <= 1;
+
+    final daysMissed = today.difference(lastCompletion).inDays - 1;
+    return daysMissed > _getGracePeriod();
   }
 
   Map<String, dynamic> toMap() {

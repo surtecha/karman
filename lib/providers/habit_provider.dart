@@ -28,16 +28,7 @@ class HabitProvider extends ChangeNotifier {
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-  List<Habit> get currentHabits {
-    switch (_selectedIndex) {
-      case 0:
-        return todayHabits;
-      case 1:
-        return scheduledHabits;
-      default:
-        return [];
-    }
-  }
+  List<Habit> get currentHabits => _selectedIndex == 0 ? todayHabits : scheduledHabits;
 
   void setSelectedIndex(int index) {
     _selectedIndex = index;
@@ -46,9 +37,7 @@ class HabitProvider extends ChangeNotifier {
 
   void toggleSelectionMode() {
     _isSelectionMode = !_isSelectionMode;
-    if (!_isSelectionMode) {
-      _selectedHabitIds.clear();
-    }
+    if (!_isSelectionMode) _selectedHabitIds.clear();
     notifyListeners();
   }
 
@@ -61,9 +50,7 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool isHabitSelected(int habitId) {
-    return _selectedHabitIds.contains(habitId);
-  }
+  bool isHabitSelected(int habitId) => _selectedHabitIds.contains(habitId);
 
   Future<void> deleteSelectedHabits() async {
     try {
@@ -82,21 +69,30 @@ class HabitProvider extends ChangeNotifier {
   Future<void> loadHabits() async {
     _isLoading = true;
     notifyListeners();
+    
     try {
+      _habits = await _repository.getAllHabits();
+      
+      for (final habit in _habits) {
+        if (habit.shouldResetStreak()) {
+          await _repository.resetStreakIfNeeded(habit.id!);
+        }
+      }
+      
       _habits = await _repository.getAllHabits();
     } catch (e) {
       debugPrint('Error loading habits: $e');
     }
+    
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> addHabit(Habit habit) async {
     try {
-      final maxOrder =
-          _habits.isEmpty
-              ? 0
-              : _habits.map((h) => h.sortOrder).reduce((a, b) => a > b ? a : b);
+      final maxOrder = _habits.isEmpty
+          ? 0
+          : _habits.map((h) => h.sortOrder).reduce((a, b) => a > b ? a : b);
       final habitWithOrder = habit.copyWith(sortOrder: maxOrder + 1);
       final id = await _repository.insertHabit(habitWithOrder);
       _habits.add(habitWithOrder.copyWith(id: id));

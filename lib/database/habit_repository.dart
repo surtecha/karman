@@ -18,38 +18,9 @@ class HabitRepository {
     return List.generate(maps.length, (i) => Habit.fromMap(maps[i]));
   }
 
-  Future<List<Habit>> getTodayHabits() async {
-    final habits = await getAllHabits();
-    final now = DateTime.now();
-    final currentWeekday = now.weekday;
-    
-    return habits.where((habit) {
-      if (habit.isCompletedToday) return false;
-      
-      if (!habit.customReminder) return true;
-      
-      return habit.reminderDays.contains(currentWeekday);
-    }).toList();
-  }
-
-  Future<List<Habit>> getScheduledHabits() async {
-    final habits = await getAllHabits();
-    final now = DateTime.now();
-    final currentWeekday = now.weekday;
-    
-    return habits.where((habit) {
-      if (habit.isCompletedToday) return true;
-      
-      if (!habit.customReminder) return false;
-      
-      return !habit.reminderDays.contains(currentWeekday);
-    }).toList();
-  }
-
   Future<int> updateHabit(Habit habit) async {
     final db = await _databaseHelper.database;
     
-    // Get the existing habit to check if reminder time changed
     final List<Map<String, dynamic>> existing = await db.query(
       'habits',
       where: 'id = ?',
@@ -59,15 +30,12 @@ class HabitRepository {
     if (existing.isNotEmpty) {
       final oldHabit = Habit.fromMap(existing[0]);
       
-      // Check if reminder time changed and habit was completed today
       final timeChanged = oldHabit.reminder.hour != habit.reminder.hour ||
           oldHabit.reminder.minute != habit.reminder.minute;
-      final customReminderChanged = oldHabit.customReminder != habit.customReminder ||
+      final scheduleChanged = oldHabit.customReminder != habit.customReminder ||
           oldHabit.reminderDays != habit.reminderDays;
       
-      if ((timeChanged || customReminderChanged) && oldHabit.isCompletedToday) {
-        // Preserve completion status and streak when time/schedule changes
-        // This prevents exploitation while maintaining flexibility
+      if ((timeChanged || scheduleChanged) && oldHabit.isCompletedToday) {
         final updatedHabit = habit.copyWith(
           currentStreak: oldHabit.currentStreak,
           maxStreak: oldHabit.maxStreak,
@@ -96,6 +64,27 @@ class HabitRepository {
     return await db.delete('habits', where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<void> resetStreakIfNeeded(int id) async {
+    final db = await _databaseHelper.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'habits',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    
+    if (maps.isEmpty) return;
+    
+    final habit = Habit.fromMap(maps[0]);
+    if (habit.shouldResetStreak()) {
+      await db.update(
+        'habits',
+        {'current_streak': 0},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    }
+  }
+
   Future<void> completeHabit(int id) async {
     final db = await _databaseHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -107,15 +96,14 @@ class HabitRepository {
     if (maps.isEmpty) return;
     
     final habit = Habit.fromMap(maps[0]);
+    if (habit.isCompletedToday) return;
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     
-    if (habit.isCompletedToday) return;
-    
     int newStreak = 1;
-    int newMaxStreak = habit.maxStreak;
     
-    if (habit.lastCompletionDate != null) {
+    if (habit.lastCompletionDate != null && !habit.shouldResetStreak()) {
       final lastCompletion = DateTime(
         habit.lastCompletionDate!.year,
         habit.lastCompletionDate!.month,
@@ -124,30 +112,28 @@ class HabitRepository {
       
       if (habit.customReminder && habit.reminderDays.isNotEmpty) {
         DateTime checkDate = lastCompletion.add(const Duration(days: 1));
-        int missedDays = 0;
+        bool foundScheduledDay = false;
         
         while (checkDate.isBefore(today)) {
           if (habit.reminderDays.contains(checkDate.weekday)) {
-            missedDays++;
+            foundScheduledDay = true;
+            break;
           }
           checkDate = checkDate.add(const Duration(days: 1));
         }
         
-        if (missedDays == 0) {
+        if (!foundScheduledDay) {
           newStreak = habit.currentStreak + 1;
         }
       } else {
-        final daysDifference = today.difference(lastCompletion).inDays;
-        
-        if (daysDifference == 1) {
+        final daysDiff = today.difference(lastCompletion).inDays;
+        if (daysDiff == 1) {
           newStreak = habit.currentStreak + 1;
         }
       }
     }
     
-    if (newStreak > newMaxStreak) {
-      newMaxStreak = newStreak;
-    }
+    final newMaxStreak = newStreak > habit.maxStreak ? newStreak : habit.maxStreak;
     
     await db.update(
       'habits',
