@@ -43,6 +43,7 @@ dependencies:
   flutter_localization: ^0.3.3
   home_widget: ^0.8.0
   flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

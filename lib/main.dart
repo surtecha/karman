@@ -1,13 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'navigation_wrapper.dart';
 import 'theme/theme_provider.dart';
 import 'providers/todo_provider.dart';
 import 'providers/habit_provider.dart';
+import 'services/notifications/base_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  tz.initializeTimeZones();
+
+  final notificationService = BaseNotificationService();
+  await notificationService.initialize();
+  await notificationService.requestPermissions();
 
   final themeProvider = ThemeProvider();
   await themeProvider.initialize();

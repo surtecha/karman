@@ -2,9 +2,12 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import '../database/todo_repository.dart';
 import '../models/todo.dart';
+import '../services/notifications/todo_notification_service.dart';
 
 class TodoProvider extends ChangeNotifier {
   final TodoRepository _repository = TodoRepository();
+  final TodoNotificationService _notificationService =
+      TodoNotificationService();
   List<Todo> _todos = [];
   List<Todo> _deletedTodos = [];
   bool _isLoading = false;
@@ -26,19 +29,31 @@ class TodoProvider extends ChangeNotifier {
 
   List<Todo> get lowPriorityTodos =>
       _todos
-          .where((todo) => !(todo.completed && !todo.pendingCompletion) && todo.priority == 0)
+          .where(
+            (todo) =>
+                !(todo.completed && !todo.pendingCompletion) &&
+                todo.priority == 0,
+          )
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
   List<Todo> get mediumPriorityTodos =>
       _todos
-          .where((todo) => !(todo.completed && !todo.pendingCompletion) && todo.priority == 1)
+          .where(
+            (todo) =>
+                !(todo.completed && !todo.pendingCompletion) &&
+                todo.priority == 1,
+          )
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
   List<Todo> get highPriorityTodos =>
       _todos
-          .where((todo) => !(todo.completed && !todo.pendingCompletion) && todo.priority == 2)
+          .where(
+            (todo) =>
+                !(todo.completed && !todo.pendingCompletion) &&
+                todo.priority == 2,
+          )
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
@@ -195,7 +210,9 @@ class TodoProvider extends ChangeNotifier {
         priority: _selectedIndex,
       );
       final id = await _repository.insertTodo(todoWithOrder);
-      _todos.add(todoWithOrder.copyWith(id: id));
+      final newTodo = todoWithOrder.copyWith(id: id);
+      _todos.add(newTodo);
+      await _notificationService.scheduleTodoNotifications(newTodo);
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding todo: $e');
@@ -208,6 +225,7 @@ class TodoProvider extends ChangeNotifier {
       final index = _todos.indexWhere((t) => t.id == todo.id);
       if (index != -1) {
         _todos[index] = todo;
+        await _notificationService.scheduleTodoNotifications(todo);
         notifyListeners();
       }
     } catch (e) {
@@ -252,6 +270,7 @@ class TodoProvider extends ChangeNotifier {
         final currentIndex = _todos.indexWhere((t) => t.id == todo.id);
         _todos[currentIndex] = completedTodo;
         await _repository.updateTodo(completedTodo);
+        await _notificationService.handleTodoCompletion(todo.id!);
         _completionTimers.remove(todo.id!);
 
         if (todo.isRepeating && todo.repeatDays.isNotEmpty) {
@@ -280,6 +299,7 @@ class TodoProvider extends ChangeNotifier {
     try {
       _completionTimers[todo.id!]?.cancel();
       _completionTimers.remove(todo.id!);
+      await _notificationService.handleTodoDeletion(todo.id!);
       await _repository.softDeleteTodo(todo.id!);
       _todos.removeWhere((t) => t.id == todo.id);
       await loadDeletedTodos();

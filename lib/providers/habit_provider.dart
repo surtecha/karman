@@ -1,9 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import '../database/habit_repository.dart';
 import '../models/habit.dart';
+import '../services/notifications/habit_notification_service.dart';
 
 class HabitProvider extends ChangeNotifier {
   final HabitRepository _repository = HabitRepository();
+  final HabitNotificationService _notificationService =
+      HabitNotificationService();
   List<Habit> _habits = [];
   bool _isLoading = false;
   int _selectedIndex = 0;
@@ -18,17 +21,22 @@ class HabitProvider extends ChangeNotifier {
 
   List<Habit> get todayHabits =>
       _habits
-          .where((habit) => habit.isScheduledForToday && !habit.isCompletedToday)
+          .where(
+            (habit) => habit.isScheduledForToday && !habit.isCompletedToday,
+          )
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
   List<Habit> get scheduledHabits =>
       _habits
-          .where((habit) => !habit.isScheduledForToday || habit.isCompletedToday)
+          .where(
+            (habit) => !habit.isScheduledForToday || habit.isCompletedToday,
+          )
           .toList()
         ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
-  List<Habit> get currentHabits => _selectedIndex == 0 ? todayHabits : scheduledHabits;
+  List<Habit> get currentHabits =>
+      _selectedIndex == 0 ? todayHabits : scheduledHabits;
 
   void setSelectedIndex(int index) {
     _selectedIndex = index;
@@ -69,33 +77,40 @@ class HabitProvider extends ChangeNotifier {
   Future<void> loadHabits() async {
     _isLoading = true;
     notifyListeners();
-    
+
     try {
       _habits = await _repository.getAllHabits();
-      
+
       for (final habit in _habits) {
         if (habit.shouldResetStreak()) {
           await _repository.resetStreakIfNeeded(habit.id!);
         }
       }
-      
+
       _habits = await _repository.getAllHabits();
+
+      for (final habit in _habits) {
+        await _notificationService.scheduleHabitNotifications(habit);
+      }
     } catch (e) {
       debugPrint('Error loading habits: $e');
     }
-    
+
     _isLoading = false;
     notifyListeners();
   }
 
   Future<void> addHabit(Habit habit) async {
     try {
-      final maxOrder = _habits.isEmpty
-          ? 0
-          : _habits.map((h) => h.sortOrder).reduce((a, b) => a > b ? a : b);
+      final maxOrder =
+          _habits.isEmpty
+              ? 0
+              : _habits.map((h) => h.sortOrder).reduce((a, b) => a > b ? a : b);
       final habitWithOrder = habit.copyWith(sortOrder: maxOrder + 1);
       final id = await _repository.insertHabit(habitWithOrder);
-      _habits.add(habitWithOrder.copyWith(id: id));
+      final newHabit = habitWithOrder.copyWith(id: id);
+      _habits.add(newHabit);
+      await _notificationService.scheduleHabitNotifications(newHabit);
       notifyListeners();
     } catch (e) {
       debugPrint('Error adding habit: $e');
@@ -108,6 +123,7 @@ class HabitProvider extends ChangeNotifier {
       final index = _habits.indexWhere((h) => h.id == habit.id);
       if (index != -1) {
         _habits[index] = habit;
+        await _notificationService.scheduleHabitNotifications(habit);
         notifyListeners();
       }
     } catch (e) {
@@ -117,6 +133,7 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> deleteHabit(int habitId) async {
     try {
+      await _notificationService.handleHabitDeletion(habitId);
       await _repository.deleteHabit(habitId);
       _habits.removeWhere((h) => h.id == habitId);
       notifyListeners();
@@ -127,6 +144,7 @@ class HabitProvider extends ChangeNotifier {
 
   Future<void> completeHabit(int habitId) async {
     try {
+      await _notificationService.handleHabitCompletion(habitId);
       await _repository.completeHabit(habitId);
       await loadHabits();
     } catch (e) {
