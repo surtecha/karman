@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:karman/theme/color_scheme.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
 import '../../models/habit.dart';
 
-class HabitTile extends StatelessWidget {
+class HabitTile extends StatefulWidget {
   final Habit habit;
   final VoidCallback onTap;
   final VoidCallback onCheckTap;
@@ -20,28 +21,57 @@ class HabitTile extends StatelessWidget {
     this.isSelectionMode = false,
   });
 
+  @override
+  State<HabitTile> createState() => _HabitTileState();
+}
+
+class _HabitTileState extends State<HabitTile> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
   String _formatReminder() {
     final hour =
-        habit.reminder.hour == 0
+        widget.habit.reminder.hour == 0
             ? 12
-            : habit.reminder.hour > 12
-            ? habit.reminder.hour - 12
-            : habit.reminder.hour;
-    final minute = habit.reminder.minute.toString().padLeft(2, '0');
-    final period = habit.reminder.hour < 12 ? 'AM' : 'PM';
-    
-    if (habit.customReminder && habit.reminderDays.isNotEmpty) {
+            : widget.habit.reminder.hour > 12
+            ? widget.habit.reminder.hour - 12
+            : widget.habit.reminder.hour;
+    final minute = widget.habit.reminder.minute.toString().padLeft(2, '0');
+    final period = widget.habit.reminder.hour < 12 ? 'AM' : 'PM';
+
+    if (widget.habit.customReminder && widget.habit.reminderDays.isNotEmpty) {
       final dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      final days = habit.reminderDays.map((day) => dayNames[day - 1]).join(', ');
+      final days = widget.habit.reminderDays
+          .map((day) => dayNames[day - 1])
+          .join(', ');
       return '$days at $hour:$minute $period';
     }
-    
+
     return 'Daily at $hour:$minute $period';
   }
 
   bool _isOverdue() {
     // Only check if habit is scheduled for today and not completed
-    if (!habit.isScheduledForToday || habit.isCompletedToday) {
+    if (!widget.habit.isScheduledForToday || widget.habit.isCompletedToday) {
       return false;
     }
 
@@ -50,8 +80,8 @@ class HabitTile extends StatelessWidget {
       now.year,
       now.month,
       now.day,
-      habit.reminder.hour,
-      habit.reminder.minute,
+      widget.habit.reminder.hour,
+      widget.habit.reminder.minute,
     );
 
     return now.isAfter(todayReminder);
@@ -61,16 +91,17 @@ class HabitTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, theme, child) {
-        final streakColor = habit.isStreakActive
-            ? AppColorScheme.accentColors['orange']!.resolveFrom(context)
-            : AppColorScheme.textSecondary(theme);
-        
+        final streakColor =
+            widget.habit.isStreakActive
+                ? AppColorScheme.accentColors['orange']!.resolveFrom(context)
+                : AppColorScheme.textSecondary(theme);
+
         return GestureDetector(
-          onTap: isSelectionMode ? null : onTap,
+          onTap: widget.isSelectionMode ? null : widget.onTap,
           child: Container(
             decoration: BoxDecoration(
               color:
-                  isSelected
+                  widget.isSelected
                       ? AppColorScheme.accent(theme, context).withOpacity(0.1)
                       : AppColorScheme.backgroundPrimary(theme),
             ),
@@ -78,7 +109,8 @@ class HabitTile extends StatelessWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: isSelectionMode ? onTap : onCheckTap,
+                  onTap:
+                      widget.isSelectionMode ? widget.onTap : widget.onCheckTap,
                   child: Container(
                     width: 24,
                     height: 24,
@@ -86,22 +118,23 @@ class HabitTile extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(
                         color:
-                            isSelectionMode && isSelected
+                            widget.isSelectionMode && widget.isSelected
                                 ? AppColorScheme.accent(theme, context)
-                                : habit.isCompletedToday
+                                : widget.habit.isCompletedToday
                                 ? AppColorScheme.accent(theme, context)
                                 : AppColorScheme.textSecondary(theme),
                         width: 2,
                       ),
                       color:
-                          isSelectionMode && isSelected
+                          widget.isSelectionMode && widget.isSelected
                               ? AppColorScheme.accent(theme, context)
-                              : habit.isCompletedToday
+                              : widget.habit.isCompletedToday
                               ? AppColorScheme.accent(theme, context)
                               : null,
                     ),
                     child:
-                        (isSelectionMode && isSelected) || habit.isCompletedToday
+                        (widget.isSelectionMode && widget.isSelected) ||
+                                widget.habit.isCompletedToday
                             ? Icon(
                               CupertinoIcons.checkmark,
                               size: 16,
@@ -116,17 +149,17 @@ class HabitTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        habit.name,
+                        widget.habit.name,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: AppColorScheme.textPrimary(theme),
                         ),
                       ),
-                      if (habit.description?.isNotEmpty == true) ...[
+                      if (widget.habit.description?.isNotEmpty == true) ...[
                         const SizedBox(height: 4),
                         Text(
-                          habit.description!,
+                          widget.habit.description!,
                           style: TextStyle(
                             fontSize: 14,
                             color: AppColorScheme.textSecondary(theme),
@@ -139,18 +172,20 @@ class HabitTile extends StatelessWidget {
                           Icon(
                             CupertinoIcons.bell,
                             size: 14,
-                            color: _isOverdue()
-                                ? AppColorScheme.destructive(context)
-                                : AppColorScheme.accent(theme, context),
+                            color:
+                                _isOverdue()
+                                    ? AppColorScheme.destructive(context)
+                                    : AppColorScheme.accent(theme, context),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             _formatReminder(),
                             style: TextStyle(
                               fontSize: 12,
-                              color: _isOverdue()
-                                  ? AppColorScheme.destructive(context)
-                                  : AppColorScheme.accent(theme, context),
+                              color:
+                                  _isOverdue()
+                                      ? AppColorScheme.destructive(context)
+                                      : AppColorScheme.accent(theme, context),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -169,7 +204,7 @@ class HabitTile extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      '${habit.currentStreak}',
+                      '${widget.habit.currentStreak}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
