@@ -6,7 +6,7 @@ import 'package:karman/components/common/context_menu.dart';
 import 'package:karman/components/habits/habit_sheet.dart';
 import 'package:karman/components/habits/habit_list.dart';
 import 'package:karman/components/habits/habit_completion_sheet.dart';
-import 'package:karman/screens/habits/streak_visualization_screen.dart';
+
 import 'package:karman/theme/color_scheme.dart';
 import 'package:karman/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -38,18 +38,16 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
     Future.delayed(const Duration(milliseconds: 300), () {
       if (!mounted) return;
-      
+
       final overlay = Overlay.of(context);
       late OverlayEntry entry;
-      
+
       entry = OverlayEntry(
-        builder: (context) => Offstage(
-          child: HabitSheet(habit: null),
-        ),
+        builder: (context) => Offstage(child: HabitSheet(habit: null)),
       );
-      
+
       overlay.insert(entry);
-      
+
       Future.delayed(const Duration(milliseconds: 100), () {
         entry.remove();
       });
@@ -60,12 +58,6 @@ class _HabitsScreenState extends State<HabitsScreen> {
     showCupertinoModalPopup(
       context: context,
       builder: (context) => HabitSheet(habit: habit),
-    );
-  }
-
-  void _openStreakVisualization() {
-    Navigator.of(context).push(
-      CupertinoPageRoute(builder: (context) => const StreakVisualizationScreen()),
     );
   }
 
@@ -85,27 +77,28 @@ class _HabitsScreenState extends State<HabitsScreen> {
 
     showCupertinoDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Delete Habits'),
-        content: Text(
-          'Are you sure you want to permanently delete ${provider.selectedHabitIds.length} habit(s)?',
-        ),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+      builder:
+          (context) => CupertinoAlertDialog(
+            title: const Text('Delete Habits'),
+            content: Text(
+              'Are you sure you want to permanently delete ${provider.selectedHabitIds.length} habit(s)?',
+            ),
+            actions: [
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              CupertinoDialogAction(
+                isDestructiveAction: true,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  provider.deleteSelectedHabits();
+                },
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () {
-              Navigator.of(context).pop();
-              provider.deleteSelectedHabits();
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -114,7 +107,7 @@ class _HabitsScreenState extends State<HabitsScreen> {
     return Consumer2<ThemeProvider, HabitProvider>(
       builder: (context, theme, habitProvider, child) {
         final accentColor = AppColorScheme.accent(theme, context);
-        
+
         return CupertinoPageScaffold(
           navigationBar: CupertinoNavigationBar(
             backgroundColor: AppColorScheme.backgroundPrimary(theme),
@@ -146,21 +139,15 @@ class _HabitsScreenState extends State<HabitsScreen> {
                 color: accentColor,
               ),
             ),
-            trailing: habitProvider.isSelectionMode
-                ? MultiSelectorNavButton(
-                    isSelectionMode: true,
-                    hasSelectedItems: habitProvider.selectedHabitIds.isNotEmpty,
-                    onPressed: () => _handleDelete(habitProvider),
-                  )
-                : CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _openStreakVisualization,
-                    child: Icon(
-                      CupertinoIcons.chart_bar_circle,
-                      size: 28,
-                      color: accentColor,
-                    ),
-                  ),
+            trailing:
+                habitProvider.isSelectionMode
+                    ? MultiSelectorNavButton(
+                      isSelectionMode: true,
+                      hasSelectedItems:
+                          habitProvider.selectedHabitIds.isNotEmpty,
+                      onPressed: () => _handleDelete(habitProvider),
+                    )
+                    : null,
           ),
           child: SafeArea(
             child: LayoutBuilder(
@@ -185,34 +172,49 @@ class _HabitsScreenState extends State<HabitsScreen> {
                               habitProvider.scheduledHabits.length,
                             ],
                             colors: [
-                              AppColorScheme.accentColors['pink']!.resolveFrom(context),
-                              AppColorScheme.accentColors['pink']!.resolveFrom(context),
+                              AppColorScheme.accentColors['pink']!.resolveFrom(
+                                context,
+                              ),
+                              AppColorScheme.accentColors['pink']!.resolveFrom(
+                                context,
+                              ),
                             ],
                             onSelectionChanged: habitProvider.setSelectedIndex,
                             initialSelection: habitProvider.selectedIndex,
                           ),
                         ),
                         Expanded(
-                          child: habitProvider.isLoading
-                              ? const Center(child: CupertinoActivityIndicator())
-                              : CustomScrollView(
-                                  slivers: [
-                                    HabitList(
-                                      habits: habitProvider.currentHabits,
-                                      onHabitTap: (habit) {
-                                        if (habitProvider.isSelectionMode) {
-                                          habitProvider.toggleHabitSelection(habit.id!);
-                                        } else {
-                                          _openHabitSheet(habit: habit);
-                                        }
-                                      },
-                                      onHabitCheckTap: (habit) => _handleHabitCheckTap(habit, habitProvider),
-                                      onReorder: habitProvider.reorderHabits,
-                                      isSelectionMode: habitProvider.isSelectionMode,
-                                      isSelected: habitProvider.isHabitSelected,
-                                    ),
-                                  ],
-                                ),
+                          child:
+                              habitProvider.isLoading
+                                  ? const Center(
+                                    child: CupertinoActivityIndicator(),
+                                  )
+                                  : CustomScrollView(
+                                    slivers: [
+                                      HabitList(
+                                        habits: habitProvider.currentHabits,
+                                        onHabitTap: (habit) {
+                                          if (habitProvider.isSelectionMode) {
+                                            habitProvider.toggleHabitSelection(
+                                              habit.id!,
+                                            );
+                                          } else {
+                                            _openHabitSheet(habit: habit);
+                                          }
+                                        },
+                                        onHabitCheckTap:
+                                            (habit) => _handleHabitCheckTap(
+                                              habit,
+                                              habitProvider,
+                                            ),
+                                        onReorder: habitProvider.reorderHabits,
+                                        isSelectionMode:
+                                            habitProvider.isSelectionMode,
+                                        isSelected:
+                                            habitProvider.isHabitSelected,
+                                      ),
+                                    ],
+                                  ),
                         ),
                       ],
                     ),
@@ -222,7 +224,8 @@ class _HabitsScreenState extends State<HabitsScreen> {
                         right: constraints.maxWidth < 350 ? 16 : 20,
                         child: CustomFloatingActionButton(
                           onPressed: _openHabitSheet,
-                          color: AppColorScheme.accentColors['pink']!.resolveFrom(context),
+                          color: AppColorScheme.accentColors['pink']!
+                              .resolveFrom(context),
                         ),
                       ),
                   ],
